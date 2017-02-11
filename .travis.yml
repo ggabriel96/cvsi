@@ -8,5 +8,5 @@ deploy:
   project: cvsi-backend
   keyfile: cvsi-travis-credentials.json
 before_install:
-- openssl aes-256-cbc -K $encrypted_117654b73dc1_key -iv $encrypted_117654b73dc1_iv
-  -in cvsi-travis-credentials.json.enc -out .\\cvsi-travis-credentials.json -d
+- openssl aes-256-cbc -K $encrypted_f40346e83fd4_key -iv $encrypted_f40346e83fd4_iv
+  -in cvsi-travis-credentials.json.enc -out cvsi-travis-credentials.json -d
