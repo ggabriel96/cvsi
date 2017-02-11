@@ -11,3 +11,7 @@ before_install:
 - chmod +x gradlew
 - openssl aes-256-cbc -K $encrypted_f40346e83fd4_key -iv $encrypted_f40346e83fd4_iv
   -in cvsi-travis-credentials.json.enc -out cvsi-travis-credentials.json -d
+install:
+- ./gradlew -b backend/build.gradle assemble
+script:
+- ./gradlew -b backend/build.gradle check
