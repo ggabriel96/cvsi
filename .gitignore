@@ -44,5 +44,5 @@ captures/
 .DS_Store
 .externalNativeBuild
 
-# Travis
-cvsi-travis-credentials.json
+# Firebase
+google-services.json
