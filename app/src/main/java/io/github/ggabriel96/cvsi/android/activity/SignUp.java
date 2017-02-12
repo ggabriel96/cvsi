@@ -53,15 +53,15 @@ public class SignUp extends AppCompatActivity {
                 Log.w(TAG, "createUserWithEmail:failed", authException);
                 email.setEnabled(Boolean.TRUE);
                 password.setEnabled(Boolean.TRUE);
-                /**
-                 * @TODO FirebaseAuthWeakPasswordException not being thrown?
-                 */
-                if (authException instanceof FirebaseException) {
-                  Toast.makeText(SignUp.this, R.string.password_weak, Toast.LENGTH_SHORT).show();
-                } else if (authException instanceof FirebaseAuthInvalidCredentialsException) {
+                if (authException instanceof FirebaseAuthInvalidCredentialsException) {
                   Toast.makeText(SignUp.this, R.string.email_invalid, Toast.LENGTH_SHORT).show();
                 } else if (authException instanceof FirebaseAuthUserCollisionException) {
                   Toast.makeText(SignUp.this, R.string.email_exists, Toast.LENGTH_SHORT).show();
+                } else if (authException instanceof FirebaseException) {
+                  /**
+                   * @TODO FirebaseAuthWeakPasswordException not being thrown?
+                   */
+                  Toast.makeText(SignUp.this, R.string.password_weak, Toast.LENGTH_SHORT).show();
                 }
               }
             }

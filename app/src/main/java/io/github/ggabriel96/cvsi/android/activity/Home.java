@@ -37,6 +37,9 @@ public class Home extends AppCompatActivity {
           Home.this.init();
         } else {
           // User is signed out
+          /**
+           * @TODO see Intent options for when pressing back button
+           */
           Log.d(TAG, "onAuthStateChanged:signed_out");
           Home.this.startActivity(new Intent(Home.this, Login.class));
         }
