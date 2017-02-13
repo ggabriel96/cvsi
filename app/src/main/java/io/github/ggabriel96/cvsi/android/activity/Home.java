@@ -1,14 +1,23 @@
 package io.github.ggabriel96.cvsi.android.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
@@ -16,17 +25,29 @@ import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 public class Home extends AppCompatActivity {
 
   protected static final FirebaseAuth auth = FirebaseAuth.getInstance();
+  protected static final DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+  protected static final FirebaseStorage storage = FirebaseStorage.getInstance();
   protected static final NetworkListener networkListener = new NetworkListener();
+
   private static final String TAG = "Home";
+  private static final int PICK_PHOTO = 2;
   private static final int LOGIN_REQUEST = 1;
+
   private FirebaseUser user;
+  private StorageReference storageRef;
   private FirebaseAuth.AuthStateListener authListener;
+
+  /*
+   * https://firebase.google.com/docs/database/android/read-and-write
+   * https://firebase.google.com/docs/reference/android/com/google/firebase/database/DatabaseReference
+   */
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     Home.networkListener.register(this);
+    this.storageRef = Home.storage.getReferenceFromUrl("gs://cvsi-backend.appspot.com");
 
     this.authListener = new FirebaseAuth.AuthStateListener() {
       @Override
@@ -34,6 +55,9 @@ public class Home extends AppCompatActivity {
         Home.this.user = firebaseAuth.getCurrentUser();
         if (Home.this.user != null) {
           // User is signed in
+          /**
+           * @TODO this is being called more than once when already logged in!?
+           */
           Log.d(TAG, "onAuthStateChanged:signed_in: " + Home.this.user.getEmail() + "(" + Home.this.user.getUid() + ")");
           Home.this.init();
         } else {
@@ -65,10 +89,16 @@ public class Home extends AppCompatActivity {
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == Home.LOGIN_REQUEST) {
-      if (resultCode != Login.RESULT_OK) this.finish();
-    } else {
-      super.onActivityResult(requestCode, resultCode, data);
+    Log.d(TAG, "onActivityResult");
+    switch (requestCode) {
+      case Home.LOGIN_REQUEST:
+        if (resultCode != Home.RESULT_OK) this.finish();
+        break;
+      case Home.PICK_PHOTO:
+        if (resultCode == Home.RESULT_OK) this.uploadPicture(data);
+        break;
+      default:
+        super.onActivityResult(requestCode, resultCode, data);
     }
   }
 
@@ -78,6 +108,36 @@ public class Home extends AppCompatActivity {
       @Override
       public void onClick(View v) {
         Home.auth.signOut();
+      }
+    });
+    this.findViewById(R.id.upload_photo).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK);
+        pickPhoto.setType("image/*");
+        Home.this.startActivityForResult(pickPhoto, Home.PICK_PHOTO);
+      }
+    });
+  }
+
+  private void uploadPicture(Intent data) {
+    Uri imageUri = data.getData();
+    StorageReference imageRef = this.storageRef.child("images/" + imageUri.getLastPathSegment());
+    Toast.makeText(Home.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
+    imageRef.putFile(imageUri)
+      .addOnFailureListener(new OnFailureListener() {
+        @Override
+        public void onFailure(@NonNull Exception exception) {
+          Log.e(TAG, "Image upload failed.", exception);
+          Toast.makeText(Home.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
+        }
+      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      @Override
+      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+        Toast.makeText(Home.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Upload successful, URL: " + taskSnapshot.getMetadata().getPath());
       }
     });
   }

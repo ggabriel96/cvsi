@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">CVSI</string>
 
-    <!-- Strings related to network connection -->
+    <!-- Strings related to network -->
+    <string name="upload_started">Upload started</string>
+    <string name="upload_successful">Upload successful!</string>
+    <string name="upload_failed">Upload failed!</string>
     <string name="disconnected">This device is currently offline.</string>
 
     <!-- Strings related to authentication -->
