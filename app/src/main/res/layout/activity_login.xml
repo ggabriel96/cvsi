@@ -12,53 +12,67 @@
     tools:context="io.github.ggabriel96.cvsi.android.activity.Login">
 
     <TextView
-        android:text="@string/login"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/email"
+        android:layout_above="@+id/email_layout"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="48dp"
-        android:textSize="@dimen/login_title_size"
-        android:id="@+id/title"/>
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textEmailAddress"
-        android:ems="10"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/email"
-        android:hint="@string/email"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"/>
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:id="@+id/password"
-        android:layout_below="@+id/email"
-        android:layout_alignStart="@+id/email"
-        android:hint="@string/password"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"/>
-
-    <Button
         android:text="@string/login"
+        android:textSize="@dimen/login_title_size"/>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/email_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/login"
-        android:layout_below="@+id/password"
-        android:layout_alignEnd="@+id/password"/>
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+
+        <EditText
+            android:id="@+id/email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/email"
+            android:inputType="textEmailAddress"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"/>
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/password_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/email_layout"
+        android:layout_below="@+id/email_layout">
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"/>
+    </android.support.design.widget.TextInputLayout>
 
     <Button
-        android:text="@string/sign_up"
+        android:id="@+id/login"
+        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/password"
-        android:layout_alignStart="@+id/password"
-        android:id="@+id/signup"/>
+        android:layout_alignEnd="@+id/password_layout"
+        android:layout_below="@+id/password_layout"
+        android:text="@string/login"/>
+
+    <Button
+        android:id="@+id/signup"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/password_layout"
+        android:layout_below="@+id/password_layout"
+        android:text="@string/sign_up"/>
 
 </RelativeLayout>

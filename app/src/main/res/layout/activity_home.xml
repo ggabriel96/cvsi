@@ -12,10 +12,11 @@
     tools:context="io.github.ggabriel96.cvsi.android.activity.Home">
 
     <Button
-        android:text="@string/logout"
+        android:id="@+id/logout"
+        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/logout"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:text="@string/logout"/>
 </RelativeLayout>
