@@ -113,16 +113,21 @@ public class Home extends AppCompatActivity {
     this.findViewById(R.id.upload_photo).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Intent pickPhoto = new Intent(Intent.ACTION_PICK);
-        pickPhoto.setType("image/*");
-        Home.this.startActivityForResult(pickPhoto, Home.PICK_PHOTO);
+        if (Home.networkListener.isOnline()) {
+          Intent pickPhoto = new Intent(Intent.ACTION_PICK);
+          pickPhoto.setType("image/*");
+          Home.this.startActivityForResult(pickPhoto, Home.PICK_PHOTO);
+        } else {
+          Toast.makeText(Home.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
+        }
       }
     });
   }
 
   private void uploadPicture(Intent data) {
     Uri imageUri = data.getData();
-    StorageReference imageRef = this.storageRef.child("images/" + imageUri.getLastPathSegment());
+    final String pictureLocation = "images/" + this.user.getUid() + "/" + imageUri.getLastPathSegment();
+    StorageReference imageRef = this.storageRef.child(pictureLocation);
     Toast.makeText(Home.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
     imageRef.putFile(imageUri)
       .addOnFailureListener(new OnFailureListener() {
@@ -134,10 +139,9 @@ public class Home extends AppCompatActivity {
       }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
       @Override
       public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-        Toast.makeText(Home.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
+        Home.db.child(pictureLocation).setValue(taskSnapshot.getMetadata().getPath());
         Log.d(TAG, "Upload successful, URL: " + taskSnapshot.getMetadata().getPath());
+        Toast.makeText(Home.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
       }
     });
   }
