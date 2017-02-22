@@ -24,6 +24,9 @@ targetCompatibility = JavaVersion.VERSION_1_7
 dependencies {
     appengineSdk 'com.google.appengine:appengine-java-sdk:1.9.34'
     compile 'javax.servlet:servlet-api:2.5'
+    compile 'com.google.appengine:appengine-api-1.0-sdk:1.9.34'
+    compile 'com.google.firebase:firebase-admin:4.1.1'
+    compile 'com.google.cloud:google-cloud-storage:0.9.2-beta'
 }
 
 appengine {
