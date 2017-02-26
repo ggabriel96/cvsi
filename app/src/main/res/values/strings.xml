@@ -1,6 +1,14 @@
 <resources>
     <string name="app_name">CVSI</string>
 
+    <!-- Bottom Navigation strings -->
+    <string name="bottom_navigation_home">Albums</string>
+    <string name="bottom_navigation_camera">Camera</string>
+    <string name="bottom_navigation_profile">Profile</string>
+
+    <!-- Picture-related -->
+    <string name="picture_upload">Upload picture</string>
+
     <!-- Strings related to network -->
     <string name="upload_started">Upload started</string>
     <string name="upload_successful">Upload successful!</string>

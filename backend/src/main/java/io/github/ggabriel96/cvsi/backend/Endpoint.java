@@ -6,12 +6,26 @@
 
 package io.github.ggabriel96.cvsi.backend;
 
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.QueryResults;
+import com.google.cloud.datastore.StructuredQuery;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseCredentials;
+
 import java.io.IOException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 
 public class Endpoint extends HttpServlet {
 
@@ -20,30 +34,29 @@ public class Endpoint extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse resp)
     throws IOException {
-//    FirebaseOptions firebaseOptions = new FirebaseOptions.Builder()
-//      .setCredential(FirebaseCredentials.applicationDefault())
-//      .setDatabaseUrl("https://cvsi-backend.firebaseio.com/")
-//      .build();
-//
-//
-//    try {
-//      FirebaseApp.initializeApp(firebaseOptions);
-//    } catch (Exception error) {
-//      Endpoint.LOG.info("Already exists...");
-//    }
-//
-//    Storage storage = StorageOptions.getDefaultInstance().getService();
-//    Blob image = storage.get("cvsi-backend.appspot.com", "images/EnknEWerHud3wy3xORvstSbQnt52/98974275");
-//
-//    resp.setContentType(image.getContentType());
-//    resp.getOutputStream().write(image.getContent());
-    String name = req.getParameter("name");
-    resp.setContentType("text/plain");
-    if (name != null) {
-      resp.getWriter().println("Hello, " + name + "!");
-    } else {
-      resp.getWriter().println("Hello there!");
+    Storage storage = StorageOptions.getDefaultInstance().getService();
+    Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    FirebaseOptions firebaseOptions = new FirebaseOptions.Builder()
+      .setCredential(FirebaseCredentials.applicationDefault())
+      .setDatabaseUrl("https://cvsi-backend.firebaseio.com/")
+      .build();
+
+
+    try {
+      FirebaseApp.initializeApp(firebaseOptions);
+    } catch (Exception error) {
+      Endpoint.LOG.info("Already exists...");
     }
+
+    Query<Entity> pictureQuery = Query.newEntityQueryBuilder().setKind("Picture")
+      .setFilter(StructuredQuery.PropertyFilter.eq("id", 1)).build();
+    QueryResults<Entity> queryResults = datastore.run(pictureQuery);
+    Entity entity = queryResults.next();
+    LOG.info(entity.getString("path"));
+    Blob image = storage.get("cvsi-backend.appspot.com", entity.getString("path"));
+
+    resp.setContentType(image.getContentType());
+    resp.getOutputStream().write(image.getContent());
   }
 
   @Override

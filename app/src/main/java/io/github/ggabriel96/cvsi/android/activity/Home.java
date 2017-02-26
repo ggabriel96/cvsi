@@ -4,17 +4,18 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -25,7 +26,6 @@ import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 public class Home extends AppCompatActivity {
 
   protected static final FirebaseAuth auth = FirebaseAuth.getInstance();
-  protected static final DatabaseReference db = FirebaseDatabase.getInstance().getReference();
   protected static final FirebaseStorage storage = FirebaseStorage.getInstance();
   protected static final NetworkListener networkListener = new NetworkListener();
 
@@ -35,7 +35,11 @@ public class Home extends AppCompatActivity {
 
   private FirebaseUser user;
   private StorageReference storageRef;
+  private FragmentManager fragmentManager;
   private FirebaseAuth.AuthStateListener authListener;
+
+  private AlbumsFragment albumsFragment;
+  private ProfileFragment profileFragment;
 
   /*
    * https://firebase.google.com/docs/database/android/read-and-write
@@ -47,6 +51,7 @@ public class Home extends AppCompatActivity {
     super.onCreate(savedInstanceState);
 
     Home.networkListener.register(this);
+    this.fragmentManager = this.getSupportFragmentManager();
     this.storageRef = Home.storage.getReferenceFromUrl("gs://cvsi-backend.appspot.com");
 
     this.authListener = new FirebaseAuth.AuthStateListener() {
@@ -102,26 +107,65 @@ public class Home extends AppCompatActivity {
     }
   }
 
-  private void init() {
-    this.setContentView(R.layout.activity_home);
-    this.findViewById(R.id.logout).setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        Home.auth.signOut();
-      }
-    });
-    this.findViewById(R.id.upload_photo).setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case R.id.upload_picture:
         if (Home.networkListener.isOnline()) {
           Intent pickPhoto = new Intent(Intent.ACTION_PICK);
           pickPhoto.setType("image/*");
-          Home.this.startActivityForResult(pickPhoto, Home.PICK_PHOTO);
+          this.startActivityForResult(pickPhoto, Home.PICK_PHOTO);
         } else {
-          Toast.makeText(Home.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
+          Toast.makeText(this, R.string.disconnected, Toast.LENGTH_SHORT).show();
         }
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
+  private void init() {
+    this.instantiateFragments();
+    this.setContentView(R.layout.activity_home);
+    this.setupBottomNavigation();
+    this.showAlbumsFragment();
+  }
+
+  private void instantiateFragments() {
+    this.albumsFragment = new AlbumsFragment();
+    this.profileFragment = new ProfileFragment();
+  }
+
+  private void setupBottomNavigation() {
+    BottomNavigationView bottomNavigationView = (BottomNavigationView) this.findViewById(R.id.bottom_navigation);
+    bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+      @Override
+      public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Boolean switched = Boolean.FALSE;
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        switch (item.getItemId()) {
+          case R.id.bottom_navigation_albums:
+            fragmentTransaction.replace(R.id.fragment_container, Home.this.albumsFragment);
+            switched = Boolean.TRUE;
+            break;
+          case R.id.bottom_navigation_camera:
+            switched = Boolean.FALSE;
+            break;
+          case R.id.bottom_navigation_profile:
+            fragmentTransaction.replace(R.id.fragment_container, Home.this.profileFragment);
+            switched = Boolean.TRUE;
+            break;
+        }
+        fragmentTransaction.commit();
+        return switched;
       }
     });
+  }
+
+  private void showAlbumsFragment() {
+    this.fragmentManager.beginTransaction()
+      .replace(R.id.fragment_container, this.albumsFragment)
+      .commit();
   }
 
   private void uploadPicture(Intent data) {
@@ -139,7 +183,6 @@ public class Home extends AppCompatActivity {
       }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
       @Override
       public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-        Home.db.child(pictureLocation).setValue(taskSnapshot.getMetadata().getPath());
         Log.d(TAG, "Upload successful, URL: " + taskSnapshot.getMetadata().getPath());
         Toast.makeText(Home.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
       }

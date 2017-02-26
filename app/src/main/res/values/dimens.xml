@@ -4,4 +4,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="login_title_size">24sp</dimen>
+
+    <dimen name="pager_height">300dp</dimen>
 </resources>
