@@ -1,4 +1,4 @@
-package io.github.ggabriel96.cvsi.android.activity;
+package io.github.ggabriel96.cvsi.android.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -7,12 +7,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import io.github.ggabriel96.cvsi.android.R;
+import io.github.ggabriel96.cvsi.android.activity.Home;
 
-public class ProfileFragment extends Fragment {
+public class Profile extends Fragment {
 
   private View layout;
 
-  public ProfileFragment() {
+  public Profile() {
     // Required empty public constructor
   }
 

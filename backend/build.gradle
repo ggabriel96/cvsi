@@ -28,14 +28,6 @@ dependencies {
     compile 'com.google.firebase:firebase-admin:4.1.1'
     compile 'com.google.cloud:google-cloud-storage:0.9.2-beta'
     compile 'com.google.cloud:google-cloud-datastore:0.9.3-beta'
-    //com/google/appengine/api/datastore/AsyncDatastoreService
-    //Caused by: java.lang.NoClassDefFoundError: com/google/appengine/api/datastore/AsyncDatastoreService
-    //at com.googlecode.objectify.ObjectifyService.<clinit>(ObjectifyService.java:21)
-    compile 'com.google.appengine:appengine-endpoints:1.9.49'
-    // add this line to avoid upper comment
-    compile 'com.google.guava:guava:19.0' // add this
-    compile 'com.googlecode.objectify:objectify:5.1.12' // works with ObjectifyFilter in web.xml
-    compile fileTree(include: ['*.jar'], dir: 'libs')
 }
 
 appengine {

@@ -3,7 +3,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="io.github.ggabriel96.cvsi.android.activity.ProfileFragment">
+                tools:context="io.github.ggabriel96.cvsi.android.fragment.Profile">
 
     <Button
         android:id="@+id/logout"

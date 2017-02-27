@@ -1,4 +1,4 @@
-package io.github.ggabriel96.cvsi.android.activity;
+package io.github.ggabriel96.cvsi.android.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,11 +11,11 @@ import android.view.ViewGroup;
 
 import io.github.ggabriel96.cvsi.android.R;
 
-public class AlbumsFragment extends Fragment {
+public class Albums extends Fragment {
 
-  private static final String TAG = "AlbumsFragment";
+  private static final String TAG = "Albums";
 
-  public AlbumsFragment() {
+  public Albums() {
     // Required empty public constructor
   }
 

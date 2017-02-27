@@ -5,8 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -22,24 +22,27 @@ import com.google.firebase.storage.UploadTask;
 
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
+import io.github.ggabriel96.cvsi.android.fragment.Albums;
+import io.github.ggabriel96.cvsi.android.fragment.Profile;
 
 public class Home extends AppCompatActivity {
 
-  protected static final FirebaseAuth auth = FirebaseAuth.getInstance();
-  protected static final FirebaseStorage storage = FirebaseStorage.getInstance();
-  protected static final NetworkListener networkListener = new NetworkListener();
+  public static final FirebaseAuth auth = FirebaseAuth.getInstance();
+  public static final FirebaseStorage storage = FirebaseStorage.getInstance();
+  public static final NetworkListener networkListener = new NetworkListener();
 
   private static final String TAG = "Home";
-  private static final int PICK_PHOTO = 2;
   private static final int LOGIN_REQUEST = 1;
+  private static final int PICK_PHOTO_REQUEST = 2;
 
+
+  private Albums albums;
+  private Profile profile;
   private FirebaseUser user;
+  private Integer currentFragmentId;
   private StorageReference storageRef;
   private FragmentManager fragmentManager;
   private FirebaseAuth.AuthStateListener authListener;
-
-  private AlbumsFragment albumsFragment;
-  private ProfileFragment profileFragment;
 
   /*
    * https://firebase.google.com/docs/database/android/read-and-write
@@ -63,7 +66,7 @@ public class Home extends AppCompatActivity {
           /**
            * @TODO this is being called more than once when already logged in!?
            */
-          Log.d(TAG, "onAuthStateChanged:signed_in: " + Home.this.user.getEmail() + "(" + Home.this.user.getUid() + ")");
+          Log.d(TAG, "onAuthStateChanged:signed_in: " + Home.this.user.getEmail() + " (" + Home.this.user.getUid() + ")");
           Home.this.init();
         } else {
           // User is signed out
@@ -99,7 +102,7 @@ public class Home extends AppCompatActivity {
       case Home.LOGIN_REQUEST:
         if (resultCode != Home.RESULT_OK) this.finish();
         break;
-      case Home.PICK_PHOTO:
+      case Home.PICK_PHOTO_REQUEST:
         if (resultCode == Home.RESULT_OK) this.uploadPicture(data);
         break;
       default:
@@ -114,7 +117,7 @@ public class Home extends AppCompatActivity {
         if (Home.networkListener.isOnline()) {
           Intent pickPhoto = new Intent(Intent.ACTION_PICK);
           pickPhoto.setType("image/*");
-          this.startActivityForResult(pickPhoto, Home.PICK_PHOTO);
+          this.startActivityForResult(pickPhoto, Home.PICK_PHOTO_REQUEST);
         } else {
           Toast.makeText(this, R.string.disconnected, Toast.LENGTH_SHORT).show();
         }
@@ -128,12 +131,12 @@ public class Home extends AppCompatActivity {
     this.instantiateFragments();
     this.setContentView(R.layout.activity_home);
     this.setupBottomNavigation();
-    this.showAlbumsFragment();
+    this.showInitialFragment();
   }
 
   private void instantiateFragments() {
-    this.albumsFragment = new AlbumsFragment();
-    this.profileFragment = new ProfileFragment();
+    this.albums = new Albums();
+    this.profile = new Profile();
   }
 
   private void setupBottomNavigation() {
@@ -141,30 +144,30 @@ public class Home extends AppCompatActivity {
     bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
       @Override
       public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Boolean switched = Boolean.FALSE;
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (Home.this.currentFragmentId == item.getItemId()
+          || item.getItemId() == R.id.bottom_navigation_camera) return false;
+        Home.this.currentFragmentId = item.getItemId();
         switch (item.getItemId()) {
           case R.id.bottom_navigation_albums:
-            fragmentTransaction.replace(R.id.fragment_container, Home.this.albumsFragment);
-            switched = Boolean.TRUE;
-            break;
-          case R.id.bottom_navigation_camera:
-            switched = Boolean.FALSE;
+            Home.this.replaceCurrentFragmentWith(Home.this.albums);
             break;
           case R.id.bottom_navigation_profile:
-            fragmentTransaction.replace(R.id.fragment_container, Home.this.profileFragment);
-            switched = Boolean.TRUE;
+            Home.this.replaceCurrentFragmentWith(Home.this.profile);
             break;
         }
-        fragmentTransaction.commit();
-        return switched;
+        return true;
       }
     });
   }
 
-  private void showAlbumsFragment() {
+  private void showInitialFragment() {
+    this.replaceCurrentFragmentWith(this.albums);
+    this.currentFragmentId = R.id.bottom_navigation_albums;
+  }
+
+  private void replaceCurrentFragmentWith(Fragment fragment) {
     this.fragmentManager.beginTransaction()
-      .replace(R.id.fragment_container, this.albumsFragment)
+      .replace(R.id.fragment_container, fragment)
       .commit();
   }
 
