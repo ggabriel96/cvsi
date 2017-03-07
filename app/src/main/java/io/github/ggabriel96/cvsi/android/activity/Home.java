@@ -186,7 +186,7 @@ public class Home extends AppCompatActivity {
       }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
       @Override
       public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-        Log.d(TAG, "Upload successful, URL: " + taskSnapshot.getMetadata().getPath());
+        Log.d(TAG, "Upload successful");
         Toast.makeText(Home.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
       }
     });
