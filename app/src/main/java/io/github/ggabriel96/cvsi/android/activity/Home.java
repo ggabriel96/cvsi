@@ -32,8 +32,8 @@ import lombok.Setter;
 public class Home extends AppCompatActivity {
 
   public static final FirebaseAuth auth = FirebaseAuth.getInstance();
-  public static final FirebaseStorage storage = FirebaseStorage.getInstance();
   public static final NetworkListener networkListener = new NetworkListener();
+  public static final FirebaseStorage storage = FirebaseStorage.getInstance();
 
   private static final String TAG = "Home";
   private static final int LOGIN_REQUEST = 1;
@@ -58,9 +58,8 @@ public class Home extends AppCompatActivity {
     super.onCreate(savedInstanceState);
 
     Home.networkListener.register(this);
+    this.storageRef = Home.storage.getReference();
     this.fragmentManager = this.getSupportFragmentManager();
-    this.storageRef = Home.storage.getReferenceFromUrl("gs://cvsi-backend.appspot.com");
-
     this.authListener = new FirebaseAuth.AuthStateListener() {
       @Override
       public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {

@@ -26,26 +26,26 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile(
-            'com.android.support.test.espresso:espresso-core:2.2.2',
-            { exclude group: 'com.android.support', module: 'support-annotations' }
-    )
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2') {
+        exclude(group: 'com.google.code.findbugs', module: 'jsr305')
+        exclude(group: 'com.android.support', module: 'support-annotations')
+    }
 
     // Add the Google API client library.
     // https://github.com/GoogleCloudPlatform/appengine-endpoints-helloendpoints-android/blob/master/HelloEndpointsProject/HelloEndpoints/build.gradle
-    compile(group: 'com.google.api-client', name: 'google-api-client', version: '1.22.0') {
+    compile('com.google.api-client:google-api-client:1.22.0') {
         // Exclude artifacts that the Android SDK/Runtime provides.
         exclude(group: 'xpp3', module: 'xpp3')
-        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
         exclude(group: 'junit', module: 'junit')
         exclude(group: 'com.google.android', module: 'android')
+        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
     }
 
     // Add the Android extensions for the Google API client library.
     // This will automatically include play services as long as you have download that library
     // from the Android SDK manager.
     // Add the Android extensions for the Google API client library.
-    compile(group: 'com.google.api-client', name: 'google-api-client-android', version: '1.22.0') {
+    compile('com.google.api-client:google-api-client-android:1.22.0') {
         exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
         // Exclude play services. Explicitly include it above after you have installed Play
         // services from the Android SDK manager.
@@ -53,23 +53,23 @@ dependencies {
     }
 
     // Android extensions for Google HTTP Client.
-    compile(group: 'com.google.http-client', name: 'google-http-client-android', version: '1.22.0') {
-        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
+    compile('com.google.http-client:google-http-client-android:1.22.0') {
         exclude(group: 'com.google.android', module: 'android')
+        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
     }
 
     compile project(path: ':backend', configuration: 'android-endpoints')
 
-    compile 'com.android.support:design:25.2.0'
-    compile 'com.android.support:support-v4:25.2.0'
-    compile 'com.android.support:appcompat-v7:25.2.0'
-    compile 'com.google.firebase:firebase-auth:10.2.0'
-    compile 'com.google.firebase:firebase-storage:10.2.0'
-    compile 'com.google.firebase:firebase-database:10.2.0'
-    compile 'com.google.code.findbugs:jsr305:2.0.1'
-    testCompile 'junit:junit:4.12'
-    annotationProcessor 'org.projectlombok:lombok:1.16.14'
-    provided 'org.projectlombok:lombok:1.16.4'
+    compile('com.android.support:design:25.2.0')
+    compile('com.android.support:support-v4:25.2.0')
+    compile('com.android.support:appcompat-v7:25.2.0')
+    compile('com.google.firebase:firebase-auth:10.2.0')
+    compile('com.google.firebase:firebase-storage:10.2.0')
+
+    testCompile('junit:junit:4.12')
+
+    annotationProcessor('org.projectlombok:lombok:1.16.14')
+    provided('org.projectlombok:lombok:1.16.4')
 }
 
 apply plugin: 'com.google.gms.google-services'
