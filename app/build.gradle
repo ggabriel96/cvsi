@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "io.github.ggabriel96.cvsi.android"
-        minSdkVersion 22
+        minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -68,7 +68,6 @@ dependencies {
     compile 'com.google.firebase:firebase-database:10.2.0'
     compile 'com.google.code.findbugs:jsr305:2.0.1'
     testCompile 'junit:junit:4.12'
-
     annotationProcessor 'org.projectlombok:lombok:1.16.14'
     provided 'org.projectlombok:lombok:1.16.4'
 }

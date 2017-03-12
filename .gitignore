@@ -46,7 +46,12 @@ captures/
 .externalNativeBuild
 
 # Firebase
-google-services.json
+app/google-services.json
+backend/src/main/webapp/WEB-INF/cvsi-backend-firebase.json
 
 # Doxygen
 doxygen/
+
+# Misc
+openapi.json
+endpoints-framework-tools-*/

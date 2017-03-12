@@ -10,6 +10,6 @@
 
     <env-variables>
         <env-var name="ENDPOINTS_SERVICE_NAME" value="cvsi-backend.appspot.com"/>
-        <env-var name="ENDPOINTS_SERVICE_VERSION" value="2017-03-06r2"/>
+        <env-var name="ENDPOINTS_SERVICE_VERSION" value="2017-03-12r2"/>
     </env-variables>
 </appengine-web-app>

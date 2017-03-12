@@ -6,11 +6,10 @@
 
 package io.github.ggabriel96.cvsi.backend;
 
+import com.google.api.server.spi.auth.common.User;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
-
-import java.util.logging.Logger;
 
 import javax.inject.Named;
 
@@ -18,7 +17,7 @@ import javax.inject.Named;
  * An endpoint class we are exposing
  * <p>
  * Generate openapi.json:
- * .\endpoints-framework-tools-2.0.4\bin\endpoints-framework-tools.bat get-openapi-doc --hostname=cvsi-backend.appspot.com --war=.\backend\build\exploded-app io.github.ggabriel96.cvsi.backend.MyEndpoint
+ * .\endpoints-framework-tools-2.0.0-beta.11\bin\endpoints-framework-tools.bat get-openapi-doc --hostname=cvsi-backend.appspot.com --war=.\backend\build\exploded-app io.github.ggabriel96.cvsi.backend.MyEndpoint
  * Then publish:
  * gcloud service-management deploy openapi.json
  */
@@ -29,18 +28,22 @@ import javax.inject.Named;
     ownerDomain = "backend.cvsi.ggabriel96.github.io",
     ownerName = "backend.cvsi.ggabriel96.github.io",
     packagePath = ""
-  )
+  ),
+  authenticators = {FirebaseAuthenticator.class}
 )
 public class MyEndpoint {
 
   /**
    * A simple endpoint method that takes a name and says Hi back
    */
-  @ApiMethod(name = "sayHi")
-  public MyBean sayHi(@Named("name") String name) {
-    Logger.getLogger(this.getClass().getName()).info("sayHi");
+  @ApiMethod(name = "sayHi", httpMethod = ApiMethod.HttpMethod.POST)
+  public MyBean sayHi(User user, @Named("name") String name) {
     MyBean response = new MyBean();
-    response.setData("Hi, " + name);
+    if (user == null) {
+      response.setData("Hi, anonymous '" + name + "'!");
+    } else {
+      response.setData("Hi, authenticated '" + name + "'.");
+    }
     return response;
   }
 

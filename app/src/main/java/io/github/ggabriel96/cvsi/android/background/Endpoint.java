@@ -2,6 +2,7 @@ package io.github.ggabriel96.cvsi.android.background;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -24,23 +25,26 @@ public class Endpoint extends AsyncTask<String, Void, String> {
   /**
    * Creates a new asynchronous task. This constructor must be invoked on the UI thread.
    */
-  public Endpoint(Context context) {
+  public Endpoint(Context context, final String authToken) {
     super();
     Log.d(TAG, "Endpoint");
-    this.buildApi();
+    this.buildApi(authToken);
     this.context = context;
   }
 
   /**
    * Sample code from https://github.com/GoogleCloudPlatform/gradle-appengine-templates/tree/master/HelloEndpoints
    */
-  private void buildApi() {
-    MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null)
+  private void buildApi(@NonNull final String authToken) {
+    AuthenticatedHttpRequest httpRequestInitializer = new AuthenticatedHttpRequest(authToken);
+    MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport()
+      , new AndroidJsonFactory()
+      , httpRequestInitializer)
       // options for running against local devappserver
       // - 10.0.2.2 is localhost's IP address in Android emulator
       // - turn off compression when running against local devappserver
       .setApplicationName("cvsi-backend")
-//      .setRootUrl("http://192.168.15.5:8080/_ah/api/")
+//      .setRootUrl("http://192.168.15.3:8080/_ah/api/")
       .setRootUrl("https://cvsi-backend.appspot.com/_ah/api/")
       .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
         @Override

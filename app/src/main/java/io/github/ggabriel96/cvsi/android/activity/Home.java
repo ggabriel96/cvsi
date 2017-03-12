@@ -24,7 +24,11 @@ import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class Home extends AppCompatActivity {
 
   public static final FirebaseAuth auth = FirebaseAuth.getInstance();
