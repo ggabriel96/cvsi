@@ -22,6 +22,7 @@ import com.google.firebase.storage.UploadTask;
 
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
+import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
 import lombok.Getter;
@@ -147,12 +148,15 @@ public class Home extends AppCompatActivity {
     bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
       @Override
       public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (Home.this.currentFragmentId == item.getItemId()
-          || item.getItemId() == R.id.bottom_navigation_camera) return false;
+        if (Home.this.currentFragmentId == item.getItemId()) return false;
         Home.this.currentFragmentId = item.getItemId();
         switch (item.getItemId()) {
           case R.id.bottom_navigation_albums:
             Home.this.replaceCurrentFragmentWith(Home.this.albums);
+            break;
+          case R.id.bottom_navigation_camera:
+            Intent camera = new Intent(Home.this, ShootingActivity.class);
+            Home.this.startActivity(camera);
             break;
           case R.id.bottom_navigation_profile:
             Home.this.replaceCurrentFragmentWith(Home.this.profile);

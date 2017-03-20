@@ -1,21 +1,21 @@
 <resources>
     <string name="app_name">CVSI</string>
 
-    <!-- Bottom Navigation strings -->
+    <!-- Bottom Navigation -->
     <string name="bottom_navigation_home">Albums</string>
     <string name="bottom_navigation_camera">Camera</string>
     <string name="bottom_navigation_profile">Profile</string>
 
-    <!-- Picture-related -->
+    <!-- Pictures -->
     <string name="picture_upload">Upload picture</string>
 
-    <!-- Strings related to network -->
+    <!-- Network -->
     <string name="upload_started">Upload started</string>
     <string name="upload_successful">Upload successful!</string>
     <string name="upload_failed">Upload failed!</string>
     <string name="disconnected">This device is currently offline.</string>
 
-    <!-- Strings related to authentication -->
+    <!-- Authentication -->
     <string name="login">Login</string>
     <string name="logout">Logout</string>
     <string name="sign_up">Sign up</string>
@@ -27,6 +27,9 @@
     <string name="password_weak">Password must be at least 6 chars long</string>
     <string name="auth_failed">Invalid email or password</string>
 
-    <!-- Misc. strings -->
+    <!-- Camera -->
+    <string name="pictures_directory">IC</string>
+
+    <!-- Misc. -->
     <string name="wait">Please wait…</string>
 </resources>
