@@ -17,7 +17,7 @@ import javax.inject.Named;
  * An endpoint class we are exposing
  * <p>
  * Generate openapi.json:
- * .\endpoints-framework-tools-2.0.0-beta.11\bin\endpoints-framework-tools.bat get-openapi-doc --hostname=cvsi-backend.appspot.com --war=.\backend\build\exploded-app io.github.ggabriel96.cvsi.backend.MyEndpoint
+ * ./endpoints-framework-tools-2.0.0-beta.11/bin/endpoints-framework-tools get-openapi-doc --hostname=cvsi-backend.appspot.com --war=./backend/build/exploded-app io.github.ggabriel96.cvsi.backend.MyEndpoint
  * Then publish:
  * gcloud service-management deploy openapi.json
  */
@@ -26,8 +26,7 @@ import javax.inject.Named;
   version = "v1",
   namespace = @ApiNamespace(
     ownerDomain = "backend.cvsi.ggabriel96.github.io",
-    ownerName = "backend.cvsi.ggabriel96.github.io",
-    packagePath = ""
+    ownerName = "backend.cvsi.ggabriel96.github.io"
   ),
   authenticators = {FirebaseAuthenticator.class}
 )
