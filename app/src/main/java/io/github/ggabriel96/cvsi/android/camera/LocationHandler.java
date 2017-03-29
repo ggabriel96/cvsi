@@ -158,4 +158,12 @@ public class LocationHandler implements GoogleApiClient.ConnectionCallbacks, Goo
     this.lastLocation = location;
     this.logLocation(this.lastLocation);
   }
+
+  public Location getLastLocation() {
+    return lastLocation;
+  }
+
+  public void setLastLocation(Location lastLocation) {
+    this.lastLocation = lastLocation;
+  }
 }

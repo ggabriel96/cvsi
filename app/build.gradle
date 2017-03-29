@@ -60,17 +60,16 @@ dependencies {
 
     compile project(path: ':backend', configuration: 'android-endpoints')
 
-    compile('com.android.support:design:25.2.0')
-    compile('com.android.support:support-v4:25.2.0')
-    compile('com.android.support:appcompat-v7:25.2.0')
-    compile('com.google.firebase:firebase-auth:10.2.0')
-    compile('com.google.firebase:firebase-storage:10.2.0')
-    compile('com.google.android.gms:play-services-location:10.2.0')
-
-    testCompile('junit:junit:4.12')
-
-    annotationProcessor('org.projectlombok:lombok:1.16.14')
-    provided('org.projectlombok:lombok:1.16.4')
+    compile 'com.android.support:design:25.3.0'
+    compile 'com.android.support:support-v4:25.3.0'
+    compile 'com.android.support:appcompat-v7:25.3.0'
+    compile 'com.google.firebase:firebase-auth:10.2.0'
+    compile 'com.google.firebase:firebase-storage:10.2.0'
+    compile 'com.google.android.gms:play-services-location:10.2.0'
+    compile 'com.google.code.findbugs:jsr305:2.0.1'
+    testCompile 'junit:junit:4.12'
+    annotationProcessor 'org.projectlombok:lombok:1.16.14'
+    provided 'org.projectlombok:lombok:1.16.4'
 }
 
 apply plugin: 'com.google.gms.google-services'

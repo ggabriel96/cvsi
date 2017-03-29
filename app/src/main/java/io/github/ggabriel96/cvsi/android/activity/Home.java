@@ -25,6 +25,7 @@ import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
+import io.github.ggabriel96.cvsi.android.util.EntityConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +34,7 @@ import lombok.Setter;
 public class Home extends AppCompatActivity {
 
   public static final FirebaseAuth auth = FirebaseAuth.getInstance();
+  public static final EntityConverter entityConverter = new EntityConverter();
   public static final NetworkListener networkListener = new NetworkListener();
   public static final FirebaseStorage storage = FirebaseStorage.getInstance();
 
@@ -40,10 +42,9 @@ public class Home extends AppCompatActivity {
   private static final int LOGIN_REQUEST = 1;
   private static final int PICK_PHOTO_REQUEST = 2;
 
-
   private Albums albums;
   private Profile profile;
-  private FirebaseUser user;
+  private FirebaseUser firebaseUser;
   private Integer currentFragmentId;
   private StorageReference storageRef;
   private FragmentManager fragmentManager;
@@ -64,13 +65,13 @@ public class Home extends AppCompatActivity {
     this.authListener = new FirebaseAuth.AuthStateListener() {
       @Override
       public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-        Home.this.user = firebaseAuth.getCurrentUser();
-        if (Home.this.user != null) {
+        Home.this.firebaseUser = firebaseAuth.getCurrentUser();
+        if (Home.this.firebaseUser != null) {
           // User is signed in
           /**
            * @TODO this is being called more than once when already logged in!?
            */
-          Log.d(TAG, "onAuthStateChanged:signed_in: " + Home.this.user.getEmail() + " (" + Home.this.user.getUid() + ")");
+          Log.d(TAG, "onAuthStateChanged:signed_in: " + Home.this.firebaseUser.getEmail() + " (" + Home.this.firebaseUser.getUid() + ")");
           Home.this.init();
         } else {
           // User is signed out
@@ -180,7 +181,7 @@ public class Home extends AppCompatActivity {
 
   private void uploadPicture(Intent data) {
     Uri imageUri = data.getData();
-    final String pictureLocation = "images/" + this.user.getUid() + "/" + imageUri.getLastPathSegment();
+    final String pictureLocation = "images/" + this.firebaseUser.getUid() + "/" + imageUri.getLastPathSegment();
     StorageReference imageRef = this.storageRef.child(pictureLocation);
     Toast.makeText(Home.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
     imageRef.putFile(imageUri)

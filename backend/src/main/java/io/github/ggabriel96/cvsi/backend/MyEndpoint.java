@@ -11,7 +11,13 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 
+import java.util.logging.Logger;
+
 import javax.inject.Named;
+
+import io.github.ggabriel96.cvsi.backend.entity.Picture;
+
+import static com.googlecode.objectify.ObjectifyService.ofy;
 
 /**
  * An endpoint class we are exposing
@@ -32,6 +38,8 @@ import javax.inject.Named;
 )
 public class MyEndpoint {
 
+  private static final Logger logger = Logger.getLogger(MyEndpoint.class.getName());
+
   /**
    * A simple endpoint method that takes a name and says Hi back
    */
@@ -46,4 +54,21 @@ public class MyEndpoint {
     return response;
   }
 
+  /**
+   * Inserts a new {@link Picture}.
+   */
+  @ApiMethod(
+    name = "insert",
+    path = "picture",
+    httpMethod = ApiMethod.HttpMethod.POST)
+  public Picture insert(Picture picture) {
+    // Typically in a RESTful API a POST does not have a known ID (assuming the ID is used in the resource path).
+    // You should validate that picture.id has not been set. If the ID type is not supported by the
+    // Objectify ID generator, e.g. long or String, then you should generate the unique ID yourself prior to saving.
+    //
+    // If your client provides the ID then you should probably use PUT instead.
+    ofy().save().entity(picture).now();
+    logger.info("Created Picture with ID: " + picture.getId());
+    return ofy().load().entity(picture).now();
+  }
 }
