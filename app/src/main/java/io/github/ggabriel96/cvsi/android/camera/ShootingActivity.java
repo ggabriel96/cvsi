@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
@@ -63,6 +64,7 @@ import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.activity.Home;
 import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
 import io.github.ggabriel96.cvsi.android.sql.PictureContract;
+import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
 import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
 
 /**
@@ -123,10 +125,10 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
   private Sensor accelerometer, gyroscope, rotation;
   private CaptureRequest.Builder previewRequestBuilder;
   private float[] accelerometerValues, gyroscopeValues, rotationValues;
-  private Integer accelerometerAccuracy, gyroscopeAccuracy, rotationAccuracy;
+  private Integer accelerometerStatus, gyroscopeStatus, rotationStatus;
 
-//  private SQLiteHelper sqLiteHelper;
-//  private SQLiteDatabase sqLiteDatabase;
+  private SQLiteHelper sqLiteHelper;
+  private SQLiteDatabase sqLiteDatabase;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -137,8 +139,8 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     this.setRotationAnimation();
     this.locationHandler.build();
 
-//    this.sqLiteHelper = new SQLiteHelper(this);
-//    this.sqLiteDatabase = this.sqLiteHelper.getWritableDatabase();
+    this.sqLiteHelper = new SQLiteHelper(this);
+    this.sqLiteDatabase = this.sqLiteHelper.getWritableDatabase();
   }
 
   @Override
@@ -195,7 +197,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     Log.d(TAG, "onDestroy");
     super.onDestroy();
     this.locationHandler.disconnect();
-//    this.sqLiteHelper.close();
+    this.sqLiteHelper.close();
   }
 
   @Override
@@ -259,11 +261,12 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
     if (sensor.equals(this.accelerometer)) {
-      this.accelerometerAccuracy = accuracy;
+      this.accelerometerStatus = accuracy;
     } else if (sensor.equals(this.gyroscope)) {
-      this.gyroscopeAccuracy = accuracy;
+      this.gyroscopeStatus = accuracy;
     } else if (sensor.equals(this.rotation)) {
-      this.rotationAccuracy = accuracy;
+      this.rotationStatus = accuracy;
+      Log.d(TAG, "rotation accuracy: " + Integer.toString(this.rotationStatus));
     }
   }
 
@@ -482,9 +485,18 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     Uri contentUri = Uri.fromFile(this.latestPhotoFile);
     Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
     this.sendBroadcast(mediaScanIntent);
-    Log.d(TAG, "Saving " + contentUri.getPath() + " with rotation " + Arrays.toString(this.rotationValues) + " to " + PictureContract.PictureEntry.TABLE_NAME);
     this.uploadPicture(contentUri);
-//    this.sqLiteDatabase.insert(PictureContract.PictureEntry.TABLE_NAME, null, PictureContract.PictureEntry.getContentValues(contentUri.getPath(), this.rotationValues));
+    this.sqLiteDatabase.insert(
+      PictureContract.PictureEntry.TABLE_NAME
+      , null
+      , PictureContract.PictureEntry.getContentValues(
+        contentUri.getPath()
+        , ShootingActivity.this.locationHandler.getLastLocation()
+        , this.accelerometerValues, this.accelerometerStatus
+        , this.gyroscopeValues, this.gyroscopeStatus
+        , this.rotationValues, this.rotationStatus
+      )
+    );
   }
 
   private void uploadPicture(final Uri uri) {
