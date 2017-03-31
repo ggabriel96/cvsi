@@ -1,7 +1,6 @@
 package io.github.ggabriel96.cvsi.android.activity;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -12,13 +11,9 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
@@ -46,7 +41,6 @@ public class Home extends AppCompatActivity {
   private Profile profile;
   private FirebaseUser firebaseUser;
   private Integer currentFragmentId;
-  private StorageReference storageRef;
   private FragmentManager fragmentManager;
   private FirebaseAuth.AuthStateListener authListener;
 
@@ -60,7 +54,6 @@ public class Home extends AppCompatActivity {
     super.onCreate(savedInstanceState);
 
     Home.networkListener.register(this);
-    this.storageRef = Home.storage.getReference();
     this.fragmentManager = this.getSupportFragmentManager();
     this.authListener = new FirebaseAuth.AuthStateListener() {
       @Override
@@ -108,7 +101,9 @@ public class Home extends AppCompatActivity {
         if (resultCode != Home.RESULT_OK) this.finish();
         break;
       case Home.PICK_PHOTO_REQUEST:
-        if (resultCode == Home.RESULT_OK) this.uploadPicture(data);
+        if (resultCode == Home.RESULT_OK) {
+          Toast.makeText(Home.this, "Menu placeholder", Toast.LENGTH_SHORT).show();
+        }
         break;
       default:
         super.onActivityResult(requestCode, resultCode, data);
@@ -179,24 +174,4 @@ public class Home extends AppCompatActivity {
       .commit();
   }
 
-  private void uploadPicture(Intent data) {
-    Uri imageUri = data.getData();
-    final String pictureLocation = "images/" + this.firebaseUser.getUid() + "/" + imageUri.getLastPathSegment();
-    StorageReference imageRef = this.storageRef.child(pictureLocation);
-    Toast.makeText(Home.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
-    imageRef.putFile(imageUri)
-      .addOnFailureListener(new OnFailureListener() {
-        @Override
-        public void onFailure(@NonNull Exception exception) {
-          Log.e(TAG, "Image upload failed.", exception);
-          Toast.makeText(Home.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
-        }
-      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-      @Override
-      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-        Log.d(TAG, "Upload successful");
-        Toast.makeText(Home.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
-      }
-    });
-  }
 }

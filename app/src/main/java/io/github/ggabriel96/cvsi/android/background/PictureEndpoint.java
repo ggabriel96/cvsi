@@ -17,6 +17,11 @@ public class PictureEndpoint extends EndpointTask<Picture, Picture, Void> {
   }
 
   @Override
+  protected void onPreExecute() {
+    Toast.makeText(this.context, "Saving picture to Datastore...", Toast.LENGTH_SHORT).show();
+  }
+
+  @Override
   protected Void doInBackground(Picture... params) {
     for (Picture picture : params) {
       try {

@@ -44,9 +44,13 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -97,6 +101,24 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
   private final SessionCaptureCallback sessionCaptureCallback = new SessionCaptureCallback(this);
   private String cameraId;
   private File latestPhotoFile;
+  private int sensorOrientation;
+  private ImageReader imageReader;
+  private TextureView textureView;
+  private CameraState cameraState;
+  private CameraDevice cameraDevice;
+  private CameraManager cameraManager;
+  private SensorManager sensorManager;
+  private StorageReference storageRef;
+  private CaptureRequest previewRequest;
+  private CameraCaptureSession captureSession;
+  private GestureDetectorCompat gestureDetector;
+  private OrientationManager orientationManager;
+  private Sensor accelerometer, gyroscope, rotation;
+  private CaptureRequest.Builder previewRequestBuilder;
+  private float[] accelerometerValues, gyroscopeValues, rotationValues;
+  private Integer accelerometerStatus, gyroscopeStatus, rotationStatus;
+  private SQLiteHelper sqLiteHelper;
+  private SQLiteDatabase sqLiteDatabase;
   /**
    * This callback will be called when a still image is ready to be saved.
    */
@@ -111,24 +133,6 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
         }
       }
     };
-  private int sensorOrientation;
-  private ImageReader imageReader;
-  private TextureView textureView;
-  private CameraState cameraState;
-  private CameraDevice cameraDevice;
-  private CameraManager cameraManager;
-  private SensorManager sensorManager;
-  private CaptureRequest previewRequest;
-  private CameraCaptureSession captureSession;
-  private GestureDetectorCompat gestureDetector;
-  private OrientationManager orientationManager;
-  private Sensor accelerometer, gyroscope, rotation;
-  private CaptureRequest.Builder previewRequestBuilder;
-  private float[] accelerometerValues, gyroscopeValues, rotationValues;
-  private Integer accelerometerStatus, gyroscopeStatus, rotationStatus;
-
-  private SQLiteHelper sqLiteHelper;
-  private SQLiteDatabase sqLiteDatabase;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +145,8 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
 
     this.sqLiteHelper = new SQLiteHelper(this);
     this.sqLiteDatabase = this.sqLiteHelper.getWritableDatabase();
+
+    this.storageRef = Home.storage.getReference();
   }
 
   @Override
@@ -485,7 +491,8 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     Uri contentUri = Uri.fromFile(this.latestPhotoFile);
     Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
     this.sendBroadcast(mediaScanIntent);
-    this.uploadPicture(contentUri);
+    this.uploadPictureToStorage(contentUri);
+    this.uploadPictureToDatastore(contentUri);
     this.sqLiteDatabase.insert(
       PictureContract.PictureEntry.TABLE_NAME
       , null
@@ -499,7 +506,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     );
   }
 
-  private void uploadPicture(final Uri uri) {
+  private void uploadPictureToDatastore(final Uri uri) {
     final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
     firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
       @Override
@@ -512,6 +519,26 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
         } else {
           Toast.makeText(ShootingActivity.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
         }
+      }
+    });
+  }
+
+  private void uploadPictureToStorage(final Uri uri) {
+    final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
+    StorageReference imageRef = this.storageRef.child(pictureLocation);
+    Toast.makeText(ShootingActivity.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
+    imageRef.putFile(uri)
+      .addOnFailureListener(new OnFailureListener() {
+        @Override
+        public void onFailure(@NonNull Exception exception) {
+          Log.e(TAG, "Image upload failed.", exception);
+          Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
+        }
+      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      @Override
+      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        Log.d(TAG, "Upload successful");
+        Toast.makeText(ShootingActivity.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
       }
     });
   }
