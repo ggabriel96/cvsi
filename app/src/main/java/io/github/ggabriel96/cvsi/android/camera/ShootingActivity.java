@@ -66,6 +66,7 @@ import java.util.List;
 
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.activity.Home;
+import io.github.ggabriel96.cvsi.android.background.LocationHandler;
 import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
 import io.github.ggabriel96.cvsi.android.sql.PictureContract;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
@@ -259,9 +260,9 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     } else if (this.rotation != null && event.sensor.equals(this.rotation)) {
       this.rotationValues = event.values;
     }
-//    Log.d(TAG, "accelerometer: " + Arrays.toString(this.accelerometerValues));
-//    Log.d(TAG, "gyroscope: " + Arrays.toString(this.gyroscopeValues));
-//    Log.d(TAG, "rotation: " + Arrays.toString(this.rotationValues));
+//    Log.d(TAG, "accelerometer: " + Arrays.lastLocationToString(this.accelerometerValues));
+//    Log.d(TAG, "gyroscope: " + Arrays.lastLocationToString(this.gyroscopeValues));
+//    Log.d(TAG, "rotation: " + Arrays.lastLocationToString(this.rotationValues));
   }
 
   @Override

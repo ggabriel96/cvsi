@@ -19,6 +19,7 @@ import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
+import io.github.ggabriel96.cvsi.android.fragment.Locations;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
 import io.github.ggabriel96.cvsi.android.util.EntityConverter;
 import lombok.Getter;
@@ -39,6 +40,7 @@ public class Home extends AppCompatActivity {
 
   private Albums albums;
   private Profile profile;
+  private Locations locations;
   private FirebaseUser firebaseUser;
   private Integer currentFragmentId;
   private FragmentManager fragmentManager;
@@ -137,6 +139,7 @@ public class Home extends AppCompatActivity {
   private void instantiateFragments() {
     this.albums = new Albums();
     this.profile = new Profile();
+    this.locations = new Locations();
   }
 
   private void setupBottomNavigation() {
@@ -156,6 +159,9 @@ public class Home extends AppCompatActivity {
             break;
           case R.id.bottom_navigation_profile:
             Home.this.replaceCurrentFragmentWith(Home.this.profile);
+            break;
+          case R.id.bottom_navigation_locations:
+            Home.this.replaceCurrentFragmentWith(Home.this.locations);
             break;
         }
         return true;

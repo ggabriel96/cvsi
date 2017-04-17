@@ -6,4 +6,5 @@
     <dimen name="login_title_size">24sp</dimen>
 
     <dimen name="pager_height">300dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>
