@@ -37,6 +37,7 @@ public class Home extends AppCompatActivity {
   private static final String TAG = "Home";
   private static final int LOGIN_REQUEST = 1;
   private static final int PICK_PHOTO_REQUEST = 2;
+  private static final String STATE_FRAGMENT_ID = "currentFragmentId";
 
   private Albums albums;
   private Profile profile;
@@ -44,6 +45,7 @@ public class Home extends AppCompatActivity {
   private FirebaseUser firebaseUser;
   private Integer currentFragmentId;
   private FragmentManager fragmentManager;
+  private BottomNavigationView bottomNavigationView;
   private FirebaseAuth.AuthStateListener authListener;
 
   /*
@@ -52,7 +54,8 @@ public class Home extends AppCompatActivity {
    */
 
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
+  protected void onCreate(final Bundle savedInstanceState) {
+    Log.d(TAG, "onCreate");
     super.onCreate(savedInstanceState);
 
     Home.networkListener.register(this);
@@ -67,7 +70,7 @@ public class Home extends AppCompatActivity {
            * @TODO this is being called more than once when already logged in!?
            */
           Log.d(TAG, "onAuthStateChanged:signed_in: " + Home.this.firebaseUser.getEmail() + " (" + Home.this.firebaseUser.getUid() + ")");
-          Home.this.init();
+          Home.this.init(savedInstanceState != null ? savedInstanceState.getInt(Home.STATE_FRAGMENT_ID) : null);
         } else {
           // User is signed out
           Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -79,18 +82,30 @@ public class Home extends AppCompatActivity {
 
   @Override
   public void onStart() {
+    Log.d(TAG, "onStart");
     super.onStart();
     Home.auth.addAuthStateListener(this.authListener);
   }
 
   @Override
+  public void onSaveInstanceState(Bundle savedInstanceState) {
+    Log.d(TAG, "onSaveInstanceState");
+    Log.d(TAG, Home.STATE_FRAGMENT_ID + ": " + this.currentFragmentId.toString());
+    savedInstanceState.putInt(Home.STATE_FRAGMENT_ID, this.currentFragmentId);
+    // Always call the superclass so it can save the view hierarchy state
+    super.onSaveInstanceState(savedInstanceState);
+  }
+
+  @Override
   public void onStop() {
+    Log.d(TAG, "onStop");
     super.onStop();
     if (this.authListener != null) Home.auth.removeAuthStateListener(this.authListener);
   }
 
   @Override
   protected void onDestroy() {
+    Log.d(TAG, "onDestroy");
     super.onDestroy();
     if (Home.networkListener != null) networkListener.unregister(this);
   }
@@ -129,39 +144,43 @@ public class Home extends AppCompatActivity {
     }
   }
 
-  private void init() {
+  private void init(Integer currentFragmentId) {
+    Log.d(TAG, "init");
     this.instantiateFragments();
     this.setContentView(R.layout.activity_home);
     this.setupBottomNavigation();
-    this.showInitialFragment();
+    this.setCurrentFragment(currentFragmentId);
   }
 
   private void instantiateFragments() {
+    Log.d(TAG, "instantiateFragments");
     this.albums = new Albums();
     this.profile = new Profile();
     this.locations = new Locations();
   }
 
   private void setupBottomNavigation() {
-    BottomNavigationView bottomNavigationView = (BottomNavigationView) this.findViewById(R.id.bottom_navigation);
-    bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+    Log.d(TAG, "setupBottomNavigation");
+    this.bottomNavigationView = (BottomNavigationView) this.findViewById(R.id.bottom_navigation);
+    this.bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
       @Override
       public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (Home.this.currentFragmentId == item.getItemId()) return false;
+        if (Home.this.currentFragmentId != null && Home.this.currentFragmentId == item.getItemId())
+          return false;
         Home.this.currentFragmentId = item.getItemId();
         switch (item.getItemId()) {
           case R.id.bottom_navigation_albums:
-            Home.this.replaceCurrentFragmentWith(Home.this.albums);
+            Home.this.setCurrentFragment(Home.this.albums);
             break;
           case R.id.bottom_navigation_camera:
             Intent camera = new Intent(Home.this, ShootingActivity.class);
             Home.this.startActivity(camera);
             break;
           case R.id.bottom_navigation_profile:
-            Home.this.replaceCurrentFragmentWith(Home.this.profile);
+            Home.this.setCurrentFragment(Home.this.profile);
             break;
           case R.id.bottom_navigation_locations:
-            Home.this.replaceCurrentFragmentWith(Home.this.locations);
+            Home.this.setCurrentFragment(Home.this.locations);
             break;
         }
         return true;
@@ -170,11 +189,18 @@ public class Home extends AppCompatActivity {
   }
 
   private void showInitialFragment() {
-    this.replaceCurrentFragmentWith(this.albums);
-    this.currentFragmentId = R.id.bottom_navigation_albums;
+    Log.d(TAG, "showInitialFragment");
+    this.setCurrentFragment(R.id.bottom_navigation_albums);
   }
 
-  private void replaceCurrentFragmentWith(Fragment fragment) {
+  private void setCurrentFragment(Integer currentFragmentId) {
+    Log.d(TAG, "setCurrentFragment " + (currentFragmentId == null ? "null" : currentFragmentId.toString()));
+    if (currentFragmentId != null)
+      Home.this.bottomNavigationView.setSelectedItemId(currentFragmentId);
+    else this.showInitialFragment();
+  }
+
+  private void setCurrentFragment(Fragment fragment) {
     this.fragmentManager.beginTransaction()
       .replace(R.id.fragment_container, fragment)
       .commit();
