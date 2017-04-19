@@ -90,8 +90,10 @@ public class Home extends AppCompatActivity {
   @Override
   public void onSaveInstanceState(Bundle savedInstanceState) {
     Log.d(TAG, "onSaveInstanceState");
-    Log.d(TAG, Home.STATE_FRAGMENT_ID + ": " + this.currentFragmentId.toString());
-    savedInstanceState.putInt(Home.STATE_FRAGMENT_ID, this.currentFragmentId);
+    if (this.currentFragmentId != null) {
+      Log.d(TAG, Home.STATE_FRAGMENT_ID + ": " + this.currentFragmentId.toString());
+      savedInstanceState.putInt(Home.STATE_FRAGMENT_ID, this.currentFragmentId);
+    }
     // Always call the superclass so it can save the view hierarchy state
     super.onSaveInstanceState(savedInstanceState);
   }
