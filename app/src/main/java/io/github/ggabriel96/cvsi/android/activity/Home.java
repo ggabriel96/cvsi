@@ -141,6 +141,10 @@ public class Home extends AppCompatActivity {
           Toast.makeText(this, R.string.disconnected, Toast.LENGTH_SHORT).show();
         }
         return true;
+      case R.id.fix_location:
+        Intent maps = new Intent(Home.this, MapsActivity.class);
+        Home.this.startActivity(maps);
+        return true;
       default:
         return super.onOptionsItemSelected(item);
     }

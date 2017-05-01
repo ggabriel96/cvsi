@@ -7,6 +7,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -38,6 +40,7 @@ public class Locations extends Fragment implements LocationListener {
   public void onCreate(@Nullable Bundle savedInstanceState) {
     Log.d(TAG, "onCreate");
     super.onCreate(savedInstanceState);
+    this.setHasOptionsMenu(true);
     this.locations = new ArrayList<>();
     this.locationHandler = new LocationHandler(this.getContext(), this);
     this.arrayAdapter = new ArrayAdapter<Location>(this.getContext(), R.layout.simple_text, this.locations) {
@@ -50,6 +53,12 @@ public class Locations extends Fragment implements LocationListener {
 
     };
     this.locationHandler.build();
+  }
+
+  @Override
+  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    super.onCreateOptionsMenu(menu, inflater);
+    inflater.inflate(R.menu.locations_menu, menu);
   }
 
   @Override
