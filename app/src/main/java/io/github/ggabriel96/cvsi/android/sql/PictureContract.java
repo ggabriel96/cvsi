@@ -33,12 +33,17 @@ public final class PictureContract {
     public static final String COLUMN_ROTATION_COSINE = "rotationCosine";
     public static final String COLUMN_ROTATION_ACCURACY = "rotationAccuracy";
     public static final String COLUMN_ROTATION_STATUS = "rotationStatus";
+    public static final String COLUMN_AZIMUTH = "azimuth";
+    public static final String COLUMN_PITCH = "pitch";
+    public static final String COLUMN_ROLL = "roll";
 
-    public static final ContentValues getContentValues(String path
+    public static ContentValues getContentValues(
+        String path
       , Location location
       , float[] accelerometerValues, int accelerometerStatus
       , float[] gyroscopeValues, int gyroscopeStatus
-      , float[] rotationValues, int rotationStatus) {
+        , float[] rotationValues, int rotationStatus
+        , float[] orientationValues) {
       ContentValues contentValues = new ContentValues();
       contentValues.put(PictureEntry.COLUMN_PATH, path);
       contentValues.put(PictureEntry.COLUMN_LATITUDE, location.getLatitude());
@@ -62,6 +67,9 @@ public final class PictureContract {
       contentValues.put(PictureEntry.COLUMN_ROTATION_COSINE, rotationValues[3]);
       contentValues.put(PictureEntry.COLUMN_ROTATION_ACCURACY, rotationValues[4]);
       contentValues.put(PictureEntry.COLUMN_ROTATION_STATUS, rotationStatus);
+      contentValues.put(PictureEntry.COLUMN_AZIMUTH, orientationValues[0]);
+      contentValues.put(PictureEntry.COLUMN_PITCH, orientationValues[1]);
+      contentValues.put(PictureEntry.COLUMN_ROLL, orientationValues[2]);
       return contentValues;
     }
   }

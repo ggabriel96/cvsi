@@ -76,13 +76,13 @@ import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
  * @TODO better modularize camera-related classes so that this activity can go to the activities package
  */
 public class ShootingActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener,
-  SensorEventListener {
+    SensorEventListener {
 
   private static final String TAG = "SA";
   private static final int REQUEST_ALL_PERMISSIONS = 1;
   private static final String[] requiredPermissions = {
-    Manifest.permission.CAMERA
-    , Manifest.permission.WRITE_EXTERNAL_STORAGE
+      Manifest.permission.CAMERA
+      , Manifest.permission.WRITE_EXTERNAL_STORAGE
   };
   /**
    * Conversion from screen rotation to JPEG orientation.
@@ -124,16 +124,16 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
    * This callback will be called when a still image is ready to be saved.
    */
   private final ImageReader.OnImageAvailableListener onImageAvailableListener =
-    new ImageReader.OnImageAvailableListener() {
-      @Override
-      public void onImageAvailable(ImageReader reader) {
-        Log.d(TAG, "onImageAvailable");
-        if (ShootingActivity.this.setupPhotoFile()) {
-          ShootingActivity.this.saveImage(reader.acquireLatestImage());
-          ShootingActivity.this.broadcastNewPicture();
+      new ImageReader.OnImageAvailableListener() {
+        @Override
+        public void onImageAvailable(ImageReader reader) {
+          Log.d(TAG, "onImageAvailable");
+          if (ShootingActivity.this.setupPhotoFile()) {
+            ShootingActivity.this.saveImage(reader.acquireLatestImage());
+            ShootingActivity.this.broadcastNewPicture();
+          }
         }
-      }
-    };
+      };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -302,22 +302,22 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
   protected String uniqueImageName() {
     Log.d(TAG, "uniqueImageName");
     return "JPEG_" + new SimpleDateFormat("yyyy-MM-dd-HHmmss")
-      .format(Calendar.getInstance().getTime()) + ".jpg";
+        .format(Calendar.getInstance().getTime()) + ".jpg";
   }
 
   private Boolean setupPhotoFile() {
     Log.d(TAG, "setupPhotoFile");
     this.latestPhotoFile = null;
     File publicPicturesDirectory =
-      Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
     File icPicturesDirectory = new File(
-      publicPicturesDirectory.getPath() + File.separator + getResources()
-        .getString(R.string.pictures_directory));
+        publicPicturesDirectory.getPath() + File.separator + getResources()
+            .getString(R.string.pictures_directory));
     Log.d(TAG, "getExternalStoragePublicDirectory: " + publicPicturesDirectory.getPath());
     Log.d(TAG, "icPicturesDirectory: " + icPicturesDirectory.getPath());
     if (icPicturesDirectory.exists() || icPicturesDirectory.mkdir()) {
       this.latestPhotoFile =
-        new File(icPicturesDirectory.getPath() + File.separator + this.uniqueImageName());
+          new File(icPicturesDirectory.getPath() + File.separator + this.uniqueImageName());
     }
     return this.latestPhotoFile != null;
   }
@@ -368,12 +368,12 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     try {
       // This is how to tell the camera to trigger.
       this.previewRequestBuilder
-        .set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
+          .set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
       // Tell captureCallback to wait for the precapture sequence to be set.
       this.cameraState = CameraState.WAITING_EXPOSURE_PRECAPTURE;
       this.captureSession
-        .capture(ShootingActivity.this.previewRequestBuilder.build(), ShootingActivity.this.sessionCaptureCallback,
-          null);
+          .capture(ShootingActivity.this.previewRequestBuilder.build(), ShootingActivity.this.sessionCaptureCallback,
+              null);
     } catch (CameraAccessException e) {
       e.printStackTrace();
     }
@@ -412,10 +412,10 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     float[] adjustedValues = new float[3];
 
     final int axisSwap[][] = {
-      {1, -1, 0, 1},  // ROTATION_0
-      {-1, -1, 1, 0}, // ROTATION_90
-      {-1, 1, 0, 1},  // ROTATION_180
-      {1, 1, 1, 0}    // ROTATION_270
+        {1, -1, 0, 1},  // ROTATION_0
+        {-1, -1, 1, 0}, // ROTATION_90
+        {-1, 1, 0, 1},  // ROTATION_180
+        {1, 1, 1, 0}    // ROTATION_270
     };
 
     final int[] as = axisSwap[displayRotation];
@@ -458,27 +458,27 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
         return;
       }
       final CaptureRequest.Builder captureRequestBuilder =
-        this.cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+          this.cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
       captureRequestBuilder.addTarget(this.imageReader.getSurface());
       // Use the same AE and AF modes as the preview.
       captureRequestBuilder
-        .set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+          .set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
 
       int rotation = this.getRotationFromAccelerometer(this.accelerometerValues);
       Log.d(ShootingActivity.TAG, Integer.toString(rotation));
       captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, this.getOrientation(rotation));
 
       CameraCaptureSession.CaptureCallback captureCallback =
-        new CameraCaptureSession.CaptureCallback() {
+          new CameraCaptureSession.CaptureCallback() {
 
-          @Override
-          public void onCaptureCompleted(@NonNull CameraCaptureSession session,
-                                         @NonNull CaptureRequest request,
-                                         @NonNull TotalCaptureResult result) {
-            Log.d(TAG, "captureStillPicture captureCallback.onCaptureCompleted");
-            ShootingActivity.this.unlockFocus();
-          }
-        };
+            @Override
+            public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                           @NonNull CaptureRequest request,
+                                           @NonNull TotalCaptureResult result) {
+              Log.d(TAG, "captureStillPicture captureCallback.onCaptureCompleted");
+              ShootingActivity.this.unlockFocus();
+            }
+          };
 
       this.captureSession.stopRepeating();
       this.captureSession.capture(captureRequestBuilder.build(), captureCallback, null);
@@ -494,16 +494,22 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     this.sendBroadcast(mediaScanIntent);
     this.uploadPictureToStorage(contentUri);
     this.uploadPictureToDatastore(contentUri);
+
+    float[] rotationMatrix = new float[9], orientationValues = new float[3];
+    SensorManager.getRotationMatrixFromVector(rotationMatrix, this.rotationValues);
+    SensorManager.getOrientation(rotationMatrix, orientationValues);
+    Log.d(TAG, "orientation values: " + Arrays.toString(orientationValues));
     this.sqLiteDatabase.insert(
-      PictureContract.PictureEntry.TABLE_NAME
-      , null
-      , PictureContract.PictureEntry.getContentValues(
-        contentUri.getPath()
-        , ShootingActivity.this.locationHandler.getLastLocation()
-        , this.accelerometerValues, this.accelerometerStatus
-        , this.gyroscopeValues, this.gyroscopeStatus
-        , this.rotationValues, this.rotationStatus
-      )
+        PictureContract.PictureEntry.TABLE_NAME
+        , null
+        , PictureContract.PictureEntry.getContentValues(
+            contentUri.getPath()
+            , ShootingActivity.this.locationHandler.getLastLocation()
+            , this.accelerometerValues, this.accelerometerStatus
+            , this.gyroscopeValues, this.gyroscopeStatus
+            , this.rotationValues, this.rotationStatus,
+            orientationValues
+        )
     );
   }
 
@@ -529,13 +535,13 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     StorageReference imageRef = this.storageRef.child(pictureLocation);
     Toast.makeText(ShootingActivity.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
     imageRef.putFile(uri)
-      .addOnFailureListener(new OnFailureListener() {
-        @Override
-        public void onFailure(@NonNull Exception exception) {
-          Log.e(TAG, "Image upload failed.", exception);
-          Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
-        }
-      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+        .addOnFailureListener(new OnFailureListener() {
+          @Override
+          public void onFailure(@NonNull Exception exception) {
+            Log.e(TAG, "Image upload failed.", exception);
+            Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
+          }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
       @Override
       public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
         Log.d(TAG, "Upload successful");
@@ -554,11 +560,11 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
       this.cameraState = CameraState.PREVIEW;
       // Reset the auto-focus trigger
       this.previewRequestBuilder
-        .set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+          .set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
       // After this, the camera will go back to the normal state of preview.
       this.captureSession.capture(this.previewRequest, this.sessionCaptureCallback, null);
       this.captureSession
-        .setRepeatingRequest(this.previewRequest, this.sessionCaptureCallback, null);
+          .setRepeatingRequest(this.previewRequest, this.sessionCaptureCallback, null);
     } catch (CameraAccessException e) {
       e.printStackTrace();
     }
@@ -613,7 +619,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
       }
 
       StreamConfigurationMap configurationMap =
-        characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+          characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
       if (configurationMap == null) {
         continue;
       }
@@ -635,7 +641,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     Log.d(TAG, "hasRequiredPermissions");
     for (String permission : ShootingActivity.requiredPermissions) {
       if (ActivityCompat.checkSelfPermission(this, permission)
-        != PackageManager.PERMISSION_GRANTED) {
+          != PackageManager.PERMISSION_GRANTED) {
         return Boolean.FALSE;
       }
     }
@@ -648,14 +654,14 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     List<String> missingPermissions = new ArrayList<>();
     try {
       packageInfo = this.getPackageManager()
-        .getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
+          .getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
     } catch (PackageManager.NameNotFoundException e) {
       e.printStackTrace();
     }
 
     for (String permission : packageInfo.requestedPermissions) {
       if (ActivityCompat.checkSelfPermission(this, permission)
-        != PackageManager.PERMISSION_GRANTED) {
+          != PackageManager.PERMISSION_GRANTED) {
         missingPermissions.add(permission);
       }
     }
@@ -677,12 +683,12 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
   private void goFullscreen() {
     Log.d(TAG, "goFullscreen");
     this.textureView.setSystemUiVisibility(
-      View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
     );
   }
 
@@ -702,7 +708,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     if (this.accelerometer != null) {
       Log.d(TAG, "registerSensors: Accelerometer");
       this.sensorManager
-        .registerListener(this, this.accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+          .registerListener(this, this.accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     } else {
       Log.d(TAG, "registerSensors: Accelerometer not available!");
     }
@@ -802,7 +808,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     public int compare(Size lhs, Size rhs) {
       // We cast here to ensure the multiplications won't overflow
       return Long.signum(
-        (long) lhs.getWidth() * lhs.getHeight() - (long) rhs.getWidth() * rhs.getHeight());
+          (long) lhs.getWidth() * lhs.getHeight() - (long) rhs.getWidth() * rhs.getHeight());
     }
   }
 }
