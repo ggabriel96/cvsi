@@ -42,8 +42,8 @@ public abstract class EndpointTask<Params, Progress, Result> extends AsyncTask<P
       // - 10.0.2.2 is localhost's IP address in Android emulator
       // - turn off compression when running against local devappserver
       .setApplicationName("cvsi-backend")
-      .setRootUrl("http://192.168.15.9:8080/_ah/api/")
-//      .setRootUrl("https://cvsi-backend.appspot.com/_ah/api/")
+//      .setRootUrl("http://192.168.15.9:8080/_ah/api/")
+      .setRootUrl("https://cvsi-backend.appspot.com/_ah/api/")
       .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
         @Override
         public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest) throws IOException {

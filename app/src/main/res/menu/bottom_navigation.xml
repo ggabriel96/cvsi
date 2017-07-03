@@ -7,20 +7,27 @@
         android:enabled="true"
         android:icon="@drawable/ic_collections_black_24dp"
         android:title="@string/bottom_navigation_home"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/bottom_navigation_camera"
         android:enabled="true"
         android:icon="@drawable/ic_camera_alt_black_24dp"
         android:title="@string/bottom_navigation_camera"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/bottom_navigation_profile"
         android:enabled="true"
         android:icon="@drawable/ic_person_black_24dp"
         android:title="@string/bottom_navigation_profile"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/bottom_navigation_locations"
+        android:enabled="true"
+        android:icon="@drawable/ic_location_on_black_24dp"
+        android:title="@string/bottom_navigation_locations"
+        app:showAsAction="always"/>
 
 </menu>

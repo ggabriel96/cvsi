@@ -5,9 +5,13 @@
     <string name="bottom_navigation_home">Albums</string>
     <string name="bottom_navigation_camera">Camera</string>
     <string name="bottom_navigation_profile">Profile</string>
+    <string name="bottom_navigation_locations">Locations</string>
 
     <!-- Pictures -->
     <string name="picture_upload">Upload picture</string>
+
+    <!-- Locations -->
+    <string name="fix_location">Adjust location</string>
 
     <!-- Network -->
     <string name="upload_started">Upload started</string>
@@ -32,4 +36,8 @@
 
     <!-- Misc. -->
     <string name="wait">Please wait…</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
