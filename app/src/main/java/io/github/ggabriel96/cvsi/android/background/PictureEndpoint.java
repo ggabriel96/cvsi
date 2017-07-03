@@ -35,6 +35,8 @@ public class PictureEndpoint extends EndpointTask<Picture, Picture, Void> {
       String message = "Picture " + values[0].getTitle() + " uploaded successfully with ID " + values[0].getId();
       Log.d(TAG, message);
       Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show();
+    } else {
+      Toast.makeText(this.context, "Picture upload failed." , Toast.LENGTH_SHORT).show();
     }
   }
 }
