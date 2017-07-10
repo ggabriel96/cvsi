@@ -1,10 +1,13 @@
 package io.github.ggabriel96.cvsi.android.fragment;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,10 +23,14 @@ import com.google.firebase.auth.GetTokenResult;
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.activity.Home;
 import io.github.ggabriel96.cvsi.android.background.Endpoint;
+import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
 
 public class Albums extends Fragment {
 
   private static final String TAG = "Albums";
+  private FragmentManager fragmentManager;
+  private AlbumPagerAdapter albumPagerAdapter;
+  private ViewPager viewPager;
 
   public Albums() {
     // Required empty public constructor
@@ -33,6 +40,9 @@ public class Albums extends Fragment {
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     this.setHasOptionsMenu(true);
+    this.fragmentManager = this.getChildFragmentManager();
+    //verify getCOntext();
+    this.albumPagerAdapter = new AlbumPagerAdapter(this.getContext(),this.fragmentManager, AlbumPagerAdapter.OrderBy.TITLE);
   }
 
   @Override
@@ -44,23 +54,8 @@ public class Albums extends Fragment {
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View albumsView = inflater.inflate(R.layout.fragment_albums, container, false);
-    final TextInputEditText textInput = (TextInputEditText) albumsView.findViewById(R.id.text_input);
-    albumsView.findViewById(R.id.send_text_input).setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        Log.d(Albums.TAG, "onClick");
-        Home.auth.getCurrentUser().getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-          @Override
-          public void onComplete(@NonNull Task<GetTokenResult> task) {
-            if (Home.networkListener.isOnline()) {
-              new Endpoint(Albums.this.getContext(), task.getResult().getToken()).execute(textInput.getText().toString());
-            } else {
-              Toast.makeText(Albums.this.getContext(), R.string.disconnected, Toast.LENGTH_SHORT).show();
-            }
-          }
-        });
-      }
-    });
+    this.viewPager = (ViewPager)albumsView.findViewById(R.id.albums_pager);
+    this.viewPager.setAdapter(this.albumPagerAdapter);
     return albumsView;
   }
 

@@ -4,10 +4,49 @@ import android.content.ContentValues;
 import android.location.Location;
 import android.provider.BaseColumns;
 
-public final class PictureContract {
+import java.util.Date;
 
-  private PictureContract() {
+public final class SQLiteContract {
+
+  private SQLiteContract() {
   }
+
+  public static final class AlbumEntry implements BaseColumns {
+    public static final String TABLE_NAME = "album";
+    public static final String COLUMN_TITLE = "title";
+    public static final String COLUMN_COVER = "cover";
+    public static final String COLUMN_DESCRIPTION = "description";
+    public static final String COLUMN_CREATION_DATE = "creationDate";
+    public static final String COLUMN_MODIFY_DATE = "modifyDate";
+
+    public static ContentValues getInsertContentValues(String title, String description, Date creationDate) {
+      ContentValues contentValues = new ContentValues();
+      contentValues.put(AlbumEntry.COLUMN_TITLE, title);
+      contentValues.put(AlbumEntry.COLUMN_DESCRIPTION, description);
+      contentValues.put(AlbumEntry.COLUMN_CREATION_DATE, creationDate.getTime());
+      contentValues.put(AlbumEntry.COLUMN_MODIFY_DATE, creationDate.getTime());
+      return contentValues;
+    }
+    public static ContentValues getUpdateDateContentValues(Date modifyDate) {
+      ContentValues contentValues = new ContentValues();
+      contentValues.put(AlbumEntry.COLUMN_MODIFY_DATE, modifyDate.getTime());
+      return contentValues;
+    }
+
+    public static ContentValues getUpdateDescriptionContentValues(String description) {
+      ContentValues contentValues = new ContentValues();
+      contentValues.put(AlbumEntry.COLUMN_DESCRIPTION, description);
+      return contentValues;
+    }
+
+    public static ContentValues getUpdateCoverContentValues(String path) {
+      ContentValues contentValues = new ContentValues();
+      contentValues.put(AlbumEntry.COLUMN_COVER, path);
+      return contentValues;
+    }
+  }
+
+
 
   public static final class PictureEntry implements BaseColumns {
     public static final String TABLE_NAME = "picture";
@@ -36,6 +75,7 @@ public final class PictureContract {
     public static final String COLUMN_AZIMUTH = "azimuth";
     public static final String COLUMN_PITCH = "pitch";
     public static final String COLUMN_ROLL = "roll";
+    public static final String COLUMN_ALBUM = "album";
 
     public static ContentValues getContentValues(
         String path
@@ -43,7 +83,8 @@ public final class PictureContract {
       , float[] accelerometerValues, int accelerometerStatus
       , float[] gyroscopeValues, int gyroscopeStatus
         , float[] rotationValues, int rotationStatus
-        , float[] orientationValues) {
+        , float[] orientationValues
+      ,String album) {
       ContentValues contentValues = new ContentValues();
       contentValues.put(PictureEntry.COLUMN_PATH, path);
       contentValues.put(PictureEntry.COLUMN_LATITUDE, location.getLatitude());
@@ -70,6 +111,7 @@ public final class PictureContract {
       contentValues.put(PictureEntry.COLUMN_AZIMUTH, orientationValues[0]);
       contentValues.put(PictureEntry.COLUMN_PITCH, orientationValues[1]);
       contentValues.put(PictureEntry.COLUMN_ROLL, orientationValues[2]);
+      contentValues.put(PictureEntry.COLUMN_ALBUM, album);
       return contentValues;
     }
   }

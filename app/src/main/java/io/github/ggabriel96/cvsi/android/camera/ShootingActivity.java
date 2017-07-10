@@ -68,7 +68,7 @@ import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.activity.Home;
 import io.github.ggabriel96.cvsi.android.background.LocationHandler;
 import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
-import io.github.ggabriel96.cvsi.android.sql.PictureContract;
+import io.github.ggabriel96.cvsi.android.sql.SQLiteContract;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
 import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
 
@@ -500,9 +500,9 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     SensorManager.getOrientation(rotationMatrix, orientationValues);
     Log.d(TAG, "orientation values: " + Arrays.toString(orientationValues));
     this.sqLiteDatabase.insert(
-        PictureContract.PictureEntry.TABLE_NAME
+        SQLiteContract.PictureEntry.TABLE_NAME
         , null
-        , PictureContract.PictureEntry.getContentValues(
+        , SQLiteContract.PictureEntry.getContentValues(
             contentUri.getPath()
             , ShootingActivity.this.locationHandler.getLastLocation()
             , this.accelerometerValues, this.accelerometerStatus
