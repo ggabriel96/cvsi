@@ -508,7 +508,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
             , this.accelerometerValues, this.accelerometerStatus
             , this.gyroscopeValues, this.gyroscopeStatus
             , this.rotationValues, this.rotationStatus,
-            orientationValues
+        orientationValues, null
         )
     );
   }

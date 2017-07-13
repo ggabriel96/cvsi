@@ -1,29 +1,17 @@
 package io.github.ggabriel96.cvsi.android.fragment;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.GetTokenResult;
 
 import io.github.ggabriel96.cvsi.android.R;
-import io.github.ggabriel96.cvsi.android.activity.Home;
-import io.github.ggabriel96.cvsi.android.background.Endpoint;
-import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
 
 public class Albums extends Fragment {
 
@@ -41,7 +29,6 @@ public class Albums extends Fragment {
     super.onCreate(savedInstanceState);
     this.setHasOptionsMenu(true);
     this.fragmentManager = this.getChildFragmentManager();
-    //verify getCOntext();
     this.albumPagerAdapter = new AlbumPagerAdapter(this.getContext(),this.fragmentManager, AlbumPagerAdapter.OrderBy.TITLE);
   }
 

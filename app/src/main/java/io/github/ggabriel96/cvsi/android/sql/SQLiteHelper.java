@@ -48,6 +48,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
       + SQLiteContract.PictureEntry.COLUMN_AZIMUTH + " real,"
       + SQLiteContract.PictureEntry.COLUMN_PITCH + " real,"
       + SQLiteContract.PictureEntry.COLUMN_ROLL + " real,"
+    + SQLiteContract.PictureEntry.COLUMN_ALBUM + " text,"
       + "foreign key (" + SQLiteContract.PictureEntry.COLUMN_ALBUM + ") references "+ SQLiteContract.AlbumEntry.TABLE_NAME + "(" + SQLiteContract.AlbumEntry.COLUMN_TITLE + ")"
       + ");";
 
@@ -64,7 +65,9 @@ public class SQLiteHelper extends SQLiteOpenHelper {
   @Override
   public void onCreate(SQLiteDatabase db) {
     db.execSQL(SQLiteHelper.CREATE_TABLE_ALBUM);
+    Log.d(TAG, SQLiteHelper.CREATE_TABLE_ALBUM);
     db.execSQL(SQLiteHelper.CREATE_TABLE_PICTURE);
+    Log.d(TAG, SQLiteHelper.CREATE_TABLE_PICTURE);
   }
 
   @Override
