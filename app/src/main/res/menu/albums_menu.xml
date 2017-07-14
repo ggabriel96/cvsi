@@ -7,5 +7,9 @@
         android:icon="@drawable/ic_file_upload_white_24dp"
         android:title="@string/picture_upload"
         app:showAsAction="ifRoom"/>
-
+    <item
+        android:id="@+id/album_create"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:title="@string/album_new"
+        app:showAsAction="ifRoom"/>
 </menu>

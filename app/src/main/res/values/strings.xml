@@ -7,6 +7,11 @@
     <string name="bottom_navigation_profile">Profile</string>
     <string name="bottom_navigation_locations">Locations</string>
 
+    <!--Albums -->
+    <string name="album_new">New album</string>
+    <string name="album_title">Album title</string>
+    <string name="album_description">Album description</string>
+
     <!-- Pictures -->
     <string name="picture_upload">Upload picture</string>
 
@@ -36,6 +41,11 @@
 
     <!-- Misc. -->
     <string name="wait">Please wait…</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 
     <string name="title_activity_maps">Map</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -20,14 +21,16 @@ import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Locations;
+import io.github.ggabriel96.cvsi.android.fragment.NewAlbum;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
+import io.github.ggabriel96.cvsi.android.interfaces.DialogListener;
 import io.github.ggabriel96.cvsi.android.util.EntityConverter;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Home extends AppCompatActivity {
+public class Home extends AppCompatActivity implements DialogListener {
 
   public static final FirebaseAuth auth = FirebaseAuth.getInstance();
   public static final EntityConverter entityConverter = new EntityConverter();
@@ -145,6 +148,10 @@ public class Home extends AppCompatActivity {
         Intent maps = new Intent(Home.this, MapsActivity.class);
         Home.this.startActivity(maps);
         return true;
+      case R.id.album_create:
+        DialogFragment newFragment = new NewAlbum();
+        newFragment.show(this.getSupportFragmentManager(), "create_album");
+
       default:
         return super.onOptionsItemSelected(item);
     }
@@ -212,4 +219,13 @@ public class Home extends AppCompatActivity {
       .commit();
   }
 
+  @Override
+  public void onDialogPositiveClick(DialogFragment dialog) {
+    //NEW ALBUM INSERT
+    // ALSO VERIFY ONOPTIONS ON MULTIPLE CLASSES
+  }
+
+  @Override
+  public void onDialogNegativeClick(DialogFragment dialog) {
+  }
 }
