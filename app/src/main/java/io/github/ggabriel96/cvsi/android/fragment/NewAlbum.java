@@ -57,13 +57,10 @@ public class NewAlbum extends DialogFragment {
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    try {
-      // Instantiate the NoticeDialogListener so we can send events to the host
-      this.dialogListener = (DialogListener) this.getActivity();
-    } catch (ClassCastException e) {
-      // The activity doesn't implement the interface, throw exception
-      throw new ClassCastException(this.getActivity().toString() + " must implement " + DialogListener.class.getName());
-    }
   }
 
+  public void setDialogListener(DialogListener dl) {
+    // Instantiate the NoticeDialogListener so we can send events to the host
+    this.dialogListener = dl;
+  }
 }
