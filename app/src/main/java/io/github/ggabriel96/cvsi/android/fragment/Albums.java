@@ -1,5 +1,6 @@
 package io.github.ggabriel96.cvsi.android.fragment;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.interfaces.DialogListener;
+import io.github.ggabriel96.cvsi.android.interfaces.SQLiteListener;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteContract;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
 
@@ -31,6 +33,7 @@ public class Albums extends Fragment implements DialogListener {
   private FragmentManager fragmentManager;
   private AlbumPagerAdapter albumPagerAdapter;
   private ViewPager viewPager;
+  private SQLiteListener sqLiteListener;
 
   private SQLiteHelper sqLiteHelper;
   private SQLiteDatabase sqLiteDatabase;
@@ -87,6 +90,10 @@ public class Albums extends Fragment implements DialogListener {
   public void onDialogPositiveClick(DialogFragment dialog) {
     String albumTitle = ((TextView) dialog.getDialog().findViewById(R.id.album_title_new)).getText().toString();
     String albumDescription = ((TextView) dialog.getDialog().findViewById(R.id.album_description_new)).getText().toString();
+    ContentValues cv = SQLiteContract.AlbumEntry.getInsertContentValues(albumTitle, albumDescription, new Date());
+    this.sqLiteDatabase.insert(SQLiteContract.AlbumEntry.TABLE_NAME, null, cv);
+    this.sqLiteListener.onInsert(cv);
+
   }
 
   @Override
@@ -141,4 +148,11 @@ public class Albums extends Fragment implements DialogListener {
 
   }
 
+  public SQLiteListener getSqLiteListener() {
+    return this.sqLiteListener;
+  }
+
+  public void setSqLiteListener(SQLiteListener sqLiteListener) {
+    this.sqLiteListener = sqLiteListener;
+  }
 }
