@@ -1,19 +1,25 @@
 package io.github.ggabriel96.cvsi.android.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 
 import java.util.Date;
 
 import io.github.ggabriel96.cvsi.android.R;
+import io.github.ggabriel96.cvsi.android.activity.AlbumActivity;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteContract;
 
 
-public class Album extends Fragment {
+public class Album extends Fragment implements View.OnClickListener {
   private String title;
   private String cover;
   private String description;
@@ -65,8 +71,25 @@ public class Album extends Fragment {
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_album, container, false);
-    ((TextView) v.findViewById(R.id.album_title)).setText(this.title);
+    ImageView imageView = ((ImageView) v.findViewById(R.id.album_cover));
+    TextView textView = ((TextView) v.findViewById(R.id.album_title));
+    //load glide
+    Glide.with(this.getContext()).load(this.cover).transition(DrawableTransitionOptions.withCrossFade(R.anim.alpha_on)).into(imageView);
+    textView.setText(this.title);
     ((TextView) v.findViewById(R.id.album_description)).setText(this.description);
+    imageView.setOnClickListener(this);
+    textView.setOnClickListener(this);
     return v;
+  }
+
+  @Override
+  public void onClick(View view) {
+    Intent album = new Intent(this.getContext(), AlbumActivity.class);
+    album.putExtra(SQLiteContract.AlbumEntry.COLUMN_COVER, this.cover);
+    album.putExtra(SQLiteContract.AlbumEntry.COLUMN_TITLE, this.title);
+    album.putExtra(SQLiteContract.AlbumEntry.COLUMN_DESCRIPTION, this.description);
+    album.putExtra(SQLiteContract.AlbumEntry.COLUMN_CREATION_DATE, this.creationDate);
+    album.putExtra(SQLiteContract.AlbumEntry.COLUMN_MODIFY_DATE, this.modifyDate);
+    this.startActivity(album);
   }
 }
