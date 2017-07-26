@@ -495,6 +495,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     this.uploadPictureToStorage(contentUri);
     this.uploadPictureToDatastore(contentUri);
 
+
     float[] rotationMatrix = new float[9], orientationValues = new float[3];
     SensorManager.getRotationMatrixFromVector(rotationMatrix, this.rotationValues);
     SensorManager.getOrientation(rotationMatrix, orientationValues);

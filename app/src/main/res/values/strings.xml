@@ -37,9 +37,10 @@
     <string name="auth_failed">Invalid email or password</string>
 
     <!-- Camera -->
-    <string name="pictures_directory">IC</string>
+    <string name="pictures_directory">CVSI</string>
 
     <!-- Misc. -->
+    <string name="provider_authority">io.github.ggabriel96.cvsi.android.fileprovider</string>
     <string name="wait">Please wait…</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>

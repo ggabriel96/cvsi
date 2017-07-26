@@ -1,11 +1,15 @@
 package io.github.ggabriel96.cvsi.android.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -15,9 +19,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
-import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Locations;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
@@ -37,11 +45,13 @@ public class Home extends AppCompatActivity {
   private static final String TAG = "Home";
   private static final int LOGIN_REQUEST = 1;
   private static final int PICK_PHOTO_REQUEST = 2;
+  private static final int REQUEST_IMAGE_CAPTURE = 3;
   private static final String STATE_FRAGMENT_ID = "currentFragmentId";
 
   private Albums albums;
   private Profile profile;
   private Locations locations;
+  private Uri captureResult;
   private FirebaseUser firebaseUser;
   private Integer currentFragmentId;
   private FragmentManager fragmentManager;
@@ -124,6 +134,11 @@ public class Home extends AppCompatActivity {
           Toast.makeText(Home.this, "Menu placeholder", Toast.LENGTH_SHORT).show();
         }
         break;
+      case Home.REQUEST_IMAGE_CAPTURE:
+        if (resultCode == Home.RESULT_OK) {
+          broadcastNewPicture(this.captureResult);
+        }
+        break;
       default:
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -145,7 +160,6 @@ public class Home extends AppCompatActivity {
         Intent maps = new Intent(Home.this, MapsActivity.class);
         Home.this.startActivity(maps);
         return true;
-
       default:
         return super.onOptionsItemSelected(item);
     }
@@ -180,8 +194,24 @@ public class Home extends AppCompatActivity {
             Home.this.setCurrentFragment(Home.this.albums);
             break;
           case R.id.bottom_navigation_camera:
-            Intent camera = new Intent(Home.this, ShootingActivity.class);
-            Home.this.startActivity(camera);
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(Home.this.getPackageManager()) != null) {
+              // Create the File where the photo should go
+              File photoFile = null;
+              try {
+                photoFile = createImageFile();
+              } catch (IOException ex) {
+                Log.e(TAG, "createImageFile Failed", ex);
+              }
+              // Continue only if the File was successfully created
+              if (photoFile != null) {
+                Home.this.captureResult = FileProvider.getUriForFile(Home.this,
+                  Home.this.getResources().getString(R.string.provider_authority),
+                  photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Home.this.captureResult);
+                Home.this.startActivityForResult(takePictureIntent, Home.REQUEST_IMAGE_CAPTURE);
+              }
+            }
             break;
           case R.id.bottom_navigation_profile:
             Home.this.setCurrentFragment(Home.this.profile);
@@ -213,5 +243,22 @@ public class Home extends AppCompatActivity {
       .commit();
   }
 
+  private File createImageFile() throws IOException, SecurityException {
+    // Create an image file name
+    String timestamp = new SimpleDateFormat("yyyy-MM-dd_HHmmss").format(Calendar.getInstance().getTime());
+    String imageFileName = "JPEG_" + timestamp + "_";
+    File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath() +
+      File.separator + getResources().getString(R.string.pictures_directory));
+    if (!storageDir.exists()) storageDir.mkdir();
+    File image = File.createTempFile(
+      imageFileName,  /* prefix */
+      ".jpg",         /* suffix */
+      storageDir      /* directory */
+    );
+    return image;
+  }
 
+  private void broadcastNewPicture(Uri uri) {
+    this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+  }
 }
