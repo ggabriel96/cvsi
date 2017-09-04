@@ -1,9 +1,13 @@
 package io.github.ggabriel96.cvsi.android.activity;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -25,17 +29,20 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import io.github.ggabriel96.cvsi.android.R;
+import io.github.ggabriel96.cvsi.android.background.LocalBinder;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
+import io.github.ggabriel96.cvsi.android.background.RotationService;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Locations;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
+import io.github.ggabriel96.cvsi.android.model.RotationData;
 import io.github.ggabriel96.cvsi.android.util.EntityConverter;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Home extends AppCompatActivity {
+public class Home extends AppCompatActivity implements ServiceConnection {
 
   public static final FirebaseAuth auth = FirebaseAuth.getInstance();
   public static final EntityConverter entityConverter = new EntityConverter();
@@ -57,6 +64,9 @@ public class Home extends AppCompatActivity {
   private FragmentManager fragmentManager;
   private BottomNavigationView bottomNavigationView;
   private FirebaseAuth.AuthStateListener authListener;
+
+  private RotationService rotationService;
+  private RotationData rotationData;
 
   /*
    * https://firebase.google.com/docs/database/android/read-and-write
@@ -136,6 +146,8 @@ public class Home extends AppCompatActivity {
         break;
       case Home.REQUEST_IMAGE_CAPTURE:
         if (resultCode == Home.RESULT_OK) {
+          this.rotationData = this.rotationService.getRotationData();
+          this.unbindService(this);
           broadcastNewPicture(this.captureResult);
         }
         break;
@@ -209,6 +221,8 @@ public class Home extends AppCompatActivity {
                   Home.this.getResources().getString(R.string.provider_authority),
                   photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Home.this.captureResult);
+                Intent intent = new Intent(Home.this, RotationService.class);
+                Home.this.bindService(intent, Home.this, Context.BIND_AUTO_CREATE);
                 Home.this.startActivityForResult(takePictureIntent, Home.REQUEST_IMAGE_CAPTURE);
               }
             }
@@ -260,5 +274,16 @@ public class Home extends AppCompatActivity {
 
   private void broadcastNewPicture(Uri uri) {
     this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+  }
+
+  @Override
+  public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+    LocalBinder localBinder = (LocalBinder) iBinder;
+    this.rotationService = localBinder.getService();
+  }
+
+  @Override
+  public void onServiceDisconnected(ComponentName componentName) {
+    this.rotationService = null;
   }
 }

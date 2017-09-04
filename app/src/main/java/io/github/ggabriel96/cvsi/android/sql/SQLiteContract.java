@@ -46,8 +46,6 @@ public final class SQLiteContract {
     }
   }
 
-
-
   public static final class PictureEntry implements BaseColumns {
     public static final String TABLE_NAME = "picture";
     public static final String COLUMN_PATH = "path";
@@ -69,6 +67,7 @@ public final class SQLiteContract {
     public static final String COLUMN_ROTATION_VECTOR_X = "rotationX";
     public static final String COLUMN_ROTATION_VECTOR_Y = "rotationY";
     public static final String COLUMN_ROTATION_VECTOR_Z = "rotationZ";
+    public static final String COLUMN_ROTATION_TIME = "rotationTime";
     public static final String COLUMN_ROTATION_COSINE = "rotationCosine";
     public static final String COLUMN_ROTATION_ACCURACY = "rotationAccuracy";
     public static final String COLUMN_ROTATION_STATUS = "rotationStatus";
@@ -78,13 +77,14 @@ public final class SQLiteContract {
     public static final String COLUMN_ALBUM = "album";
 
     public static ContentValues getContentValues(
-        String path
+      String path
       , Location location
       , float[] accelerometerValues, int accelerometerStatus
       , float[] gyroscopeValues, int gyroscopeStatus
         , float[] rotationValues, int rotationStatus
+      , long rotationTime
         , float[] orientationValues
-      ,String album) {
+      , String album) {
       ContentValues contentValues = new ContentValues();
       contentValues.put(PictureEntry.COLUMN_PATH, path);
       contentValues.put(PictureEntry.COLUMN_LATITUDE, location.getLatitude());
@@ -105,6 +105,7 @@ public final class SQLiteContract {
       contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_X, rotationValues[0]);
       contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_Y, rotationValues[1]);
       contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_Z, rotationValues[2]);
+      contentValues.put(PictureEntry.COLUMN_ROTATION_TIME, rotationTime);
       contentValues.put(PictureEntry.COLUMN_ROTATION_COSINE, rotationValues[3]);
       contentValues.put(PictureEntry.COLUMN_ROTATION_ACCURACY, rotationValues[4]);
       contentValues.put(PictureEntry.COLUMN_ROTATION_STATUS, rotationStatus);

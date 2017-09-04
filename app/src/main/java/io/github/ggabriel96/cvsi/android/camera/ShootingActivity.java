@@ -508,7 +508,7 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
             , ShootingActivity.this.locationHandler.getLastLocation()
             , this.accelerometerValues, this.accelerometerStatus
             , this.gyroscopeValues, this.gyroscopeStatus
-            , this.rotationValues, this.rotationStatus,
+        , this.rotationValues, this.rotationStatus, 1,
         orientationValues, null
         )
     );
