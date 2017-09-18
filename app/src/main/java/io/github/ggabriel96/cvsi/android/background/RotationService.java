@@ -11,7 +11,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import io.github.ggabriel96.cvsi.android.model.RotationData;
+import io.github.ggabriel96.cvsi.android.controller.RotationAdapter;
 
 /**
  * Created by gbrl on 04/09/17.
@@ -20,9 +20,10 @@ import io.github.ggabriel96.cvsi.android.model.RotationData;
 public class RotationService extends Service implements SensorEventListener {
   private static final String TAG = "RS";
   private LocalBinder localBinder;
-  private Sensor rotation;
-  private RotationData rotationData;
+  private Sensor accelerometer, gyroscope, rotation;
+  private RotationAdapter rotationAdapter;
   private SensorManager sensorManager;
+
 
   @Nullable
   @Override
@@ -38,25 +39,18 @@ public class RotationService extends Service implements SensorEventListener {
 
   @Override
   public void onSensorChanged(SensorEvent event) {
-    if (this.rotation != null && event.sensor.equals(this.rotation)) {
-      this.rotationData.timestamp = System.currentTimeMillis();
-      this.rotationData.rotationValues = event.values;
-    }
-//    Log.d(TAG, "rotation: " + Arrays.lastLocationToString(this.rotationValues));
+    this.rotationAdapter.onSensorChanged(event);
   }
 
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    if (sensor.equals(this.rotation)) {
-      this.rotationData.rotationStatus = accuracy;
-      Log.d(TAG, "rotation accuracy: " + Integer.toString(this.rotationData.rotationStatus));
-    }
+    this.rotationAdapter.onAccuracyChanged(sensor, accuracy);
   }
 
   @Override
   public void onCreate() {
     super.onCreate();
-    this.rotationData = new RotationData();
+    this.rotationAdapter = new RotationAdapter();
     this.localBinder = new LocalBinder(this);
     this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
     this.rotation = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -68,10 +62,9 @@ public class RotationService extends Service implements SensorEventListener {
     this.stopListener();
   }
 
-  public RotationData getRotationData() {
-    return this.rotationData;
+  public RotationAdapter getRotationAdapter() {
+    return this.rotationAdapter;
   }
-
   public void stopListener() {
     this.sensorManager.unregisterListener(this);
     this.sensorManager = null;

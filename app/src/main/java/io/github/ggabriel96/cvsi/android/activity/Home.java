@@ -19,9 +19,16 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,12 +38,15 @@ import java.util.Calendar;
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.LocalBinder;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
+import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
 import io.github.ggabriel96.cvsi.android.background.RotationService;
+import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Locations;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
-import io.github.ggabriel96.cvsi.android.model.RotationData;
+import io.github.ggabriel96.cvsi.android.model.SensorData;
 import io.github.ggabriel96.cvsi.android.util.EntityConverter;
+import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -66,7 +76,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   private FirebaseAuth.AuthStateListener authListener;
 
   private RotationService rotationService;
-  private RotationData rotationData;
+  private SensorData sensorData;
 
   /*
    * https://firebase.google.com/docs/database/android/read-and-write
@@ -146,8 +156,10 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         break;
       case Home.REQUEST_IMAGE_CAPTURE:
         if (resultCode == Home.RESULT_OK) {
-          this.rotationData = this.rotationService.getRotationData();
+          this.rotationService.stopListener();
+          SensorData[] sensorDatas = this.rotationService.getRotationAdapter().getSensorDatas();
           this.unbindService(this);
+
           broadcastNewPicture(this.captureResult);
         }
         break;
@@ -276,6 +288,44 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
   }
 
+
+  private void uploadPictureToDatastore(final Uri uri) {
+    final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
+    firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+      @Override
+      public void onComplete(@NonNull Task<GetTokenResult> task) {
+        if (Home.networkListener.isOnline()) {
+          Picture picture = Home.entityConverter.pictureToJson(uri);
+          picture.setUser(Home.entityConverter.userToJson(firebaseUser));
+          picture.setLocation(Home.entityConverter.locationToJson(ShootingActivity.this.locationHandler.getLastLocation()));
+          new PictureEndpoint(ShootingActivity.this, task.getResult().getToken()).execute(picture);
+        } else {
+          Toast.makeText(ShootingActivity.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
+        }
+      }
+    });
+  }
+
+  private void uploadPictureToStorage(final Uri uri) {
+    final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
+    StorageReference imageRef = this.storageRef.child(pictureLocation);
+    Toast.makeText(ShootingActivity.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
+    imageRef.putFile(uri)
+      .addOnFailureListener(new OnFailureListener() {
+        @Override
+        public void onFailure(@NonNull Exception exception) {
+          Log.e(TAG, "Image upload failed.", exception);
+          Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
+        }
+      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      @Override
+      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        Log.d(TAG, "Upload successful");
+        Toast.makeText(ShootingActivity.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
+      }
+    });
+  }
+
   @Override
   public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
     LocalBinder localBinder = (LocalBinder) iBinder;
@@ -286,4 +336,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   public void onServiceDisconnected(ComponentName componentName) {
     this.rotationService = null;
   }
+
+
 }

@@ -11,7 +11,6 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.camera2.CameraAccessException;
@@ -41,16 +40,8 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,10 +58,8 @@ import java.util.List;
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.activity.Home;
 import io.github.ggabriel96.cvsi.android.background.LocationHandler;
-import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteContract;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
-import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
 
 /**
  * @TODO better modularize camera-related classes so that this activity can go to the activities package
@@ -251,19 +240,6 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     }
   }
 
-  @Override
-  public void onSensorChanged(SensorEvent event) {
-    if (this.accelerometer != null && event.sensor.equals(this.accelerometer)) {
-      this.accelerometerValues = event.values;
-    } else if (this.gyroscope != null && event.sensor.equals(this.gyroscope)) {
-      this.gyroscopeValues = event.values;
-    } else if (this.rotation != null && event.sensor.equals(this.rotation)) {
-      this.rotationValues = event.values;
-    }
-//    Log.d(TAG, "accelerometer: " + Arrays.lastLocationToString(this.accelerometerValues));
-//    Log.d(TAG, "gyroscope: " + Arrays.lastLocationToString(this.gyroscopeValues));
-//    Log.d(TAG, "rotation: " + Arrays.lastLocationToString(this.rotationValues));
-  }
 
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -495,11 +471,6 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     this.uploadPictureToStorage(contentUri);
     this.uploadPictureToDatastore(contentUri);
 
-
-    float[] rotationMatrix = new float[9], orientationValues = new float[3];
-    SensorManager.getRotationMatrixFromVector(rotationMatrix, this.rotationValues);
-    SensorManager.getOrientation(rotationMatrix, orientationValues);
-    Log.d(TAG, "orientation values: " + Arrays.toString(orientationValues));
     this.sqLiteDatabase.insert(
         SQLiteContract.PictureEntry.TABLE_NAME
         , null
@@ -514,42 +485,6 @@ public class ShootingActivity extends AppCompatActivity implements TextureView.S
     );
   }
 
-  private void uploadPictureToDatastore(final Uri uri) {
-    final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
-    firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-      @Override
-      public void onComplete(@NonNull Task<GetTokenResult> task) {
-        if (Home.networkListener.isOnline()) {
-          Picture picture = Home.entityConverter.pictureToJson(uri);
-          picture.setUser(Home.entityConverter.userToJson(firebaseUser));
-          picture.setLocation(Home.entityConverter.locationToJson(ShootingActivity.this.locationHandler.getLastLocation()));
-          new PictureEndpoint(ShootingActivity.this, task.getResult().getToken()).execute(picture);
-        } else {
-          Toast.makeText(ShootingActivity.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
-        }
-      }
-    });
-  }
-
-  private void uploadPictureToStorage(final Uri uri) {
-    final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
-    StorageReference imageRef = this.storageRef.child(pictureLocation);
-    Toast.makeText(ShootingActivity.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
-    imageRef.putFile(uri)
-        .addOnFailureListener(new OnFailureListener() {
-          @Override
-          public void onFailure(@NonNull Exception exception) {
-            Log.e(TAG, "Image upload failed.", exception);
-            Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
-          }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-      @Override
-      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-        Log.d(TAG, "Upload successful");
-        Toast.makeText(ShootingActivity.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
-      }
-    });
-  }
 
   /**
    * Unlock the focus. This method should be called when still image capture sequence is

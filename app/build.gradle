@@ -64,8 +64,6 @@ dependencies {
         transitive = true
     }
 
-
-
     compile project(path: ':backend', configuration: 'android-endpoints')
 
     compile 'com.mikepenz:fastadapter-commons:2.6.0@aar'
@@ -73,6 +71,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.7.0'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:exifinterface:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.google.firebase:firebase-auth:10.2.1'
     compile 'com.google.firebase:firebase-storage:10.2.1'
