@@ -2,6 +2,9 @@ package io.github.ggabriel96.cvsi.android.controller;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import android.location.Location;
+
+import com.google.android.gms.location.LocationListener;
 
 import io.github.ggabriel96.cvsi.android.model.SensorData;
 
@@ -9,11 +12,14 @@ import io.github.ggabriel96.cvsi.android.model.SensorData;
  * Created by gbrl on 15/09/17.
  */
 
-public class RotationAdapter {
+public class RotationAdapter implements LocationListener {
+  public static final int MAXSIZE = 1024;
   private static final String TAG = "RA";
-  private static final int MAXSIZE = 1024;
-  private SensorData[] rotationData, accelerometerData, gyroscopeData;
-  private int rotationIndex, accelerometerIndex, gyroscopeIndex;
+  private SensorData[] rotationData;
+  private SensorData[] accelerometerData;
+  private SensorData[] gyroscopeData;
+  private int rotationIndex, accelerometerIndex, gyroscopeIndex, locationIndex;
+  private Location[] locations;
 
 
   public RotationAdapter() {
@@ -23,6 +29,8 @@ public class RotationAdapter {
     this.accelerometerIndex = 0;
     this.gyroscopeData = new SensorData[MAXSIZE];
     this.gyroscopeIndex = 0;
+    this.locations = new Location[MAXSIZE];
+    this.locationIndex = 0;
   }
 
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -61,6 +69,25 @@ public class RotationAdapter {
         rotationIndex++;
         break;
     }
+  }
+
+  public SensorData[] getRotationData() {
+    return rotationData;
+  }
+
+  public SensorData[] getAccelerometerData() {
+    return accelerometerData;
+  }
+
+  public SensorData[] getGyroscopeData() {
+    return gyroscopeData;
+  }
+
+  @Override
+  public void onLocationChanged(Location location) {
+    if (locationIndex == MAXSIZE) locationIndex = 0;
+    this.locations[locationIndex] = location;
+    locationIndex++;
   }
 
 }

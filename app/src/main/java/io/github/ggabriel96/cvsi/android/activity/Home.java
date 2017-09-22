@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
@@ -37,10 +38,12 @@ import java.util.Calendar;
 
 import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.LocalBinder;
+import io.github.ggabriel96.cvsi.android.background.LocationHandler;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
 import io.github.ggabriel96.cvsi.android.background.RotationService;
 import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
+import io.github.ggabriel96.cvsi.android.controller.RotationAdapter;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Locations;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
@@ -77,6 +80,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
 
   private RotationService rotationService;
   private SensorData sensorData;
+  private LocationHandler locationHandler;
 
   /*
    * https://firebase.google.com/docs/database/android/read-and-write
@@ -155,16 +159,33 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         }
         break;
       case Home.REQUEST_IMAGE_CAPTURE:
+        this.rotationService.stopListener();
         if (resultCode == Home.RESULT_OK) {
-          this.rotationService.stopListener();
-          SensorData[] sensorDatas = this.rotationService.getRotationAdapter().getSensorDatas();
+          SensorData[] accelerometerDatas = this.rotationService.getRotationAdapter().getAccelerometerData();
+          SensorData[] gyroscopeDatas = this.rotationService.getRotationAdapter().getGyroscopeData();
+          SensorData[] rotationDatas = this.rotationService.getRotationAdapter().getRotationData();
+          this.locationHandler.stopLocationUpdates();
+          this.locationHandler.disconnect();
           this.unbindService(this);
-
           broadcastNewPicture(this.captureResult);
+          try {
+            ExifInterface exifInterface = this.getExif(this.captureResult);
+            exifInterface.getDateTime();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
         }
         break;
       default:
         super.onActivityResult(requestCode, resultCode, data);
+    }
+  }
+
+  private void x(SensorData[] sensorDatas, Integer lastIndex, Long timestamp) {
+    if (lastIndex + 1 < RotationAdapter.MAXSIZE && sensorDatas[lastIndex + 1] != null && timestamp <= sensorDatas[lastIndex].timestamp) {
+      //binarySearch(List<? extends Comparable<? super T>> list, T key] -- i+1, MAXSIZE
+    } else {
+      //binarySearch(List<? extends Comparable<? super T>> list, T key) -- 0,i
     }
   }
 
@@ -330,6 +351,9 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
     LocalBinder localBinder = (LocalBinder) iBinder;
     this.rotationService = localBinder.getService();
+    this.locationHandler = new LocationHandler(this, this.rotationService.getRotationAdapter());
+    this.locationHandler.build();
+    this.locationHandler.startLocationUpdates();
   }
 
   @Override
@@ -337,5 +361,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     this.rotationService = null;
   }
 
-
+  public ExifInterface getExif(Uri uri) throws IOException {
+    return new ExifInterface(uri.getPath());
+  }
 }

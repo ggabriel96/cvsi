@@ -170,9 +170,12 @@ public class LocationHandler implements GoogleApiClient.ConnectionCallbacks, Goo
   @Override
   public void onLocationChanged(Location location) {
     Log.d(LOG_TAG, "onLocationChanged");
-    this.lastLocation = location;
-    Log.d(LOG_TAG, this.lastLocationToString());
-    Toast.makeText(this.context, "Location accuracy: " + String.valueOf(location.getAccuracy()) + "m", Toast.LENGTH_SHORT).show();
+    if (this.locationListener != null) this.locationListener.onLocationChanged(location);
+    else {
+      this.lastLocation = location;
+      Log.d(LOG_TAG, this.lastLocationToString());
+      Toast.makeText(this.context, "Location accuracy: " + String.valueOf(location.getAccuracy()) + "m", Toast.LENGTH_SHORT).show();
+    }
   }
 
   public String lastLocationToString() {

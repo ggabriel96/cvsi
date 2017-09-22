@@ -53,6 +53,8 @@ public class RotationService extends Service implements SensorEventListener {
     this.rotationAdapter = new RotationAdapter();
     this.localBinder = new LocalBinder(this);
     this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+    this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    this.gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     this.rotation = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
   }
 
