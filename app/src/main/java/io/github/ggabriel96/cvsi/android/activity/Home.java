@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
@@ -160,20 +159,13 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         break;
       case Home.REQUEST_IMAGE_CAPTURE:
         this.rotationService.stopListener();
+        this.locationHandler.stopLocationUpdates();
+        this.locationHandler.disconnect();
         if (resultCode == Home.RESULT_OK) {
-          SensorData[] accelerometerDatas = this.rotationService.getRotationAdapter().getAccelerometerData();
-          SensorData[] gyroscopeDatas = this.rotationService.getRotationAdapter().getGyroscopeData();
-          SensorData[] rotationDatas = this.rotationService.getRotationAdapter().getRotationData();
-          this.locationHandler.stopLocationUpdates();
-          this.locationHandler.disconnect();
+          RotationAdapter rotationAdapter = this.rotationService.getRotationAdapter();
           this.unbindService(this);
           broadcastNewPicture(this.captureResult);
-          try {
-            ExifInterface exifInterface = this.getExif(this.captureResult);
-            exifInterface.getDateTime();
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
+
         }
         break;
       default:
@@ -181,12 +173,41 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     }
   }
 
-  private void x(SensorData[] sensorDatas, Integer lastIndex, Long timestamp) {
-    if (lastIndex + 1 < RotationAdapter.MAXSIZE && sensorDatas[lastIndex + 1] != null && timestamp <= sensorDatas[lastIndex].timestamp) {
-      //binarySearch(List<? extends Comparable<? super T>> list, T key] -- i+1, MAXSIZE
-    } else {
-      //binarySearch(List<? extends Comparable<? super T>> list, T key) -- 0,i
-    }
+  private void uploadPictureToDatastore(final Uri uri) {
+    final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
+    firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+      @Override
+      public void onComplete(@NonNull Task<GetTokenResult> task) {
+        if (Home.networkListener.isOnline()) {
+          Picture picture = Home.entityConverter.pictureToJson(uri);
+          picture.setUser(Home.entityConverter.userToJson(firebaseUser));
+          picture.setLocation(Home.entityConverter.locationToJson(ShootingActivity.this.locationHandler.getLastLocation()));
+          new PictureEndpoint(ShootingActivity.this, task.getResult().getToken()).execute(picture);
+        } else {
+          Toast.makeText(ShootingActivity.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
+        }
+      }
+    });
+  }
+
+  private void uploadPictureToStorage(final Uri uri) {
+    final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
+    StorageReference imageRef = this.storageRef.child(pictureLocation);
+    Toast.makeText(ShootingActivity.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
+    imageRef.putFile(uri)
+      .addOnFailureListener(new OnFailureListener() {
+        @Override
+        public void onFailure(@NonNull Exception exception) {
+          Log.e(TAG, "Image upload failed.", exception);
+          Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
+        }
+      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      @Override
+      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        Log.d(TAG, "Upload successful");
+        Toast.makeText(ShootingActivity.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
+      }
+    });
   }
 
   @Override
@@ -310,42 +331,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   }
 
 
-  private void uploadPictureToDatastore(final Uri uri) {
-    final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
-    firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-      @Override
-      public void onComplete(@NonNull Task<GetTokenResult> task) {
-        if (Home.networkListener.isOnline()) {
-          Picture picture = Home.entityConverter.pictureToJson(uri);
-          picture.setUser(Home.entityConverter.userToJson(firebaseUser));
-          picture.setLocation(Home.entityConverter.locationToJson(ShootingActivity.this.locationHandler.getLastLocation()));
-          new PictureEndpoint(ShootingActivity.this, task.getResult().getToken()).execute(picture);
-        } else {
-          Toast.makeText(ShootingActivity.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
-        }
-      }
-    });
-  }
-
-  private void uploadPictureToStorage(final Uri uri) {
-    final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
-    StorageReference imageRef = this.storageRef.child(pictureLocation);
-    Toast.makeText(ShootingActivity.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
-    imageRef.putFile(uri)
-      .addOnFailureListener(new OnFailureListener() {
-        @Override
-        public void onFailure(@NonNull Exception exception) {
-          Log.e(TAG, "Image upload failed.", exception);
-          Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
-        }
-      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-      @Override
-      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-        Log.d(TAG, "Upload successful");
-        Toast.makeText(ShootingActivity.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
-      }
-    });
-  }
 
   @Override
   public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -361,7 +346,4 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     this.rotationService = null;
   }
 
-  public ExifInterface getExif(Uri uri) throws IOException {
-    return new ExifInterface(uri.getPath());
-  }
 }

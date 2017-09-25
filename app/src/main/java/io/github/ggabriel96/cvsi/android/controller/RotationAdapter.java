@@ -6,7 +6,10 @@ import android.location.Location;
 
 import com.google.android.gms.location.LocationListener;
 
+import java.util.Arrays;
+
 import io.github.ggabriel96.cvsi.android.model.SensorData;
+import io.github.ggabriel96.cvsi.android.util.LocationGeotimeComparator;
 
 /**
  * Created by gbrl on 15/09/17.
@@ -90,4 +93,58 @@ public class RotationAdapter implements LocationListener {
     locationIndex++;
   }
 
+  public SensorData findClosestSensorData(Long timestamp, int sensorType) {
+    switch (sensorType) {
+      case Sensor.TYPE_ACCELEROMETER:
+        return this.findClosestSensorData(this.accelerometerData, this.accelerometerIndex, timestamp);
+      case Sensor.TYPE_GYROSCOPE:
+        return this.findClosestSensorData(this.gyroscopeData, this.gyroscopeIndex, timestamp);
+      case Sensor.TYPE_ROTATION_VECTOR:
+        return this.findClosestSensorData(this.rotationData, this.rotationIndex, timestamp);
+      default:
+        return null;
+    }
+  }
+
+  private SensorData findClosestSensorData(SensorData[] sensorDatas, Integer lastestIndex, Long timestamp) {
+    int index = searchTimestamp(sensorDatas, lastestIndex, timestamp);
+    if (index < 0) {
+      index = -(index + 2);
+      Long timeDelta = Math.abs(sensorDatas[index].timestamp - timestamp);
+      Long previousTimeDelta = Math.abs(sensorDatas[index - 1].timestamp - timestamp);
+      return sensorDatas[(timeDelta <= previousTimeDelta) ? index : index - 1];
+    }
+    return sensorDatas[index];
+  }
+
+  private int searchTimestamp(SensorData[] sensorDatas, Integer lastIndex, Long timestamp) {
+    SensorData sensorData = new SensorData();
+    sensorData.timestamp = timestamp;
+    if (lastIndex + 1 < RotationAdapter.MAXSIZE && sensorDatas[lastIndex + 1] != null && timestamp <= sensorDatas[lastIndex].timestamp) {
+      return Arrays.binarySearch(sensorDatas, lastIndex + 1, RotationAdapter.MAXSIZE, sensorData);
+    } else {
+      return Arrays.binarySearch(sensorDatas, 0, lastIndex + 1, sensorData);
+    }
+  }
+
+  public Location findClosestLocation(Long timestamp) {
+    int index = searchTimestamp(this.locations, this.locationIndex, timestamp);
+    if (index < 0) {
+      index = -(index + 2);
+      Long timeDelta = Math.abs(this.locations[index].getTime() - timestamp);
+      Long previousTimeDelta = Math.abs(this.locations[index - 1].getTime() - timestamp);
+      return this.locations[(timeDelta <= previousTimeDelta) ? index : index - 1];
+    }
+    return this.locations[index];
+  }
+
+  private int searchTimestamp(Location[] locations, Integer lastIndex, Long timestamp) {
+    Location location = new Location("manual");
+    location.setTime(timestamp);
+    if (lastIndex + 1 < RotationAdapter.MAXSIZE && locations[lastIndex + 1] != null && timestamp <= locations[lastIndex].getTime()) {
+      return Arrays.binarySearch(locations, lastIndex + 1, RotationAdapter.MAXSIZE, location, new LocationGeotimeComparator());
+    } else {
+      return Arrays.binarySearch(locations, 0, lastIndex + 1, location, new LocationGeotimeComparator());
+    }
+  }
 }

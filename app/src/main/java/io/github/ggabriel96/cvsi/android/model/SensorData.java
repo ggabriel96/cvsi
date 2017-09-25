@@ -1,12 +1,13 @@
 package io.github.ggabriel96.cvsi.android.model;
 
 import android.hardware.SensorManager;
+import android.support.annotation.NonNull;
 
 /**
  * Created by gbrl on 04/09/17.
  */
 
-public class SensorData {
+public class SensorData implements Comparable<SensorData> {
   public Long timestamp;
   public float[] values;
   public Integer status;
@@ -18,4 +19,10 @@ public class SensorData {
     //Log.d(TAG, "orientation values: " + Arrays.toString(orientationValues));
     return orientationValues;
   }
+
+  @Override
+  public int compareTo(@NonNull SensorData sd) {
+    return this.timestamp.compareTo(sd.timestamp);
+  }
+
 }
