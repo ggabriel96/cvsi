@@ -7,13 +7,14 @@ import android.util.Log;
 
 import com.google.api.client.util.DateTime;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.IOException;
 import java.util.Date;
 
 import io.github.ggabriel96.cvsi.android.controller.RotationAdapter;
 import io.github.ggabriel96.cvsi.android.model.SensorData;
-import io.github.ggabriel96.cvsi.backend.myApi.model.Location;
+import io.github.ggabriel96.cvsi.backend.myApi.model.GeoPt;
 import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
 import io.github.ggabriel96.cvsi.backend.myApi.model.User;
 
@@ -30,20 +31,14 @@ public class EntityConverter {
     return user;
   }
 
-  public Location locationToJson(android.location.Location androidLocation) {
-    Location location = new Location();
-    location.setId(1L);
-    location.setAltitude(androidLocation.getAltitude());
-    location.setLatitude(androidLocation.getLatitude());
-    location.setLongitude(androidLocation.getLongitude());
-    location.setLocationAccuracy(androidLocation.getAccuracy());
-    location.setLocationBearing(androidLocation.getBearing());
-    location.setLocationProvider(androidLocation.getProvider());
-    location.setLocationTime(androidLocation.getTime());
-    return location;
+  public GeoPt locationToJson(android.location.Location androidLocation) throws InvalidProtocolBufferException {
+    GeoPt geopoint = new GeoPt();
+    geopoint.setLatitude((float) androidLocation.getLatitude());
+    geopoint.setLongitude((float) androidLocation.getLongitude());
+    return geopoint;
   }
 
-  public Picture pictureToJson(Uri uri, RotationAdapter rotationAdapter) {
+  public Picture pictureToJson(Uri uri, User user, RotationAdapter rotationAdapter) {
     Picture picture = null;
     try {
       picture = new Picture();
@@ -53,10 +48,32 @@ public class EntityConverter {
       SensorData closestAccelerometer = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_ACCELEROMETER);
       SensorData closestGyroscope = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_GYROSCOPE);
       SensorData closestRotation = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_ROTATION_VECTOR);
+      picture.setUser(user);
       picture.setCaptured(new DateTime(picTimestamp));
       picture.setDescription("Description");
       picture.setTitle(uri.getLastPathSegment());
       picture.setLocation(this.locationToJson(closestLocation));
+      picture.setLocationAccuracy(closestLocation.getAccuracy());
+      picture.setLocationBearing(closestLocation.getBearing());
+      picture.setLocationProvider(closestLocation.getProvider());
+      picture.setLocationTime(new DateTime(closestLocation.getTime()));
+      picture.setAccelerometerX(closestAccelerometer.values[0]);
+      picture.setAccelerometerY(closestAccelerometer.values[1]);
+      picture.setAccelerometerZ(closestAccelerometer.values[2]);
+      picture.setAccelerometerStatus(closestAccelerometer.status);
+      picture.setGyroscopeX(closestGyroscope.values[0]);
+      picture.setGyroscopeY(closestGyroscope.values[1]);
+      picture.setGyroscopeZ(closestGyroscope.values[2]);
+      picture.setGyroscopeStatus(closestGyroscope.status);
+      picture.setRotationX(closestRotation.values[0]);
+      picture.setRotationY(closestRotation.values[1]);
+      picture.setRotationZ(closestRotation.values[2]);
+      picture.setRotationCosine(closestRotation.values[3]);
+      picture.setRotationAccuracy(closestRotation.status);
+      float[] apr = closestRotation.getOrientationValues();
+      picture.setAzimuth(apr[0]);
+      picture.setPitch(apr[1]);
+      picture.setRoll(apr[2]);
     } catch (IOException e) {
       e.printStackTrace();
     }

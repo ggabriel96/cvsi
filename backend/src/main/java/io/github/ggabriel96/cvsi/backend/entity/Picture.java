@@ -1,6 +1,6 @@
 package io.github.ggabriel96.cvsi.backend.entity;
 
-import com.google.type.LatLng;
+import com.google.appengine.api.datastore.GeoPt;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
@@ -15,24 +15,34 @@ public class Picture {
   private Long id;
   private String title;
   private String description;
+  @Index
   private Date captured;
   private Float accelerometerX;
   private Float accelerometerY;
   private Float accelerometerZ;
+  private Integer accelerometerStatus;
   private Float gyroscopeX;
   private Float gyroscopeY;
   private Float gyroscopeZ;
+  private Integer gyroscopeStatus;
   private Float rotationX;
   private Float rotationY;
   private Float rotationZ;
   private Float rotationCosine;
-  private Float rotationAccuracy;
+  private Integer rotationStatus;
   @Index
-  private LatLng location;
+  private GeoPt location;
   private Float locationAccuracy;
   private Float locationBearing;
   private String locationProvider;
   private Date locationTime;
+  @Index
+  private Float azimuth;
+  @Index
+  private Float pitch;
+  @Index
+  private Float roll;
+  @Index
   private Ref<User> user;
 
   public Picture() {
@@ -109,6 +119,14 @@ public class Picture {
     this.accelerometerZ = accelerometerZ;
   }
 
+  public Integer getAccelerometerStatus() {
+    return accelerometerStatus;
+  }
+
+  public void setAccelerometerStatus(Integer accelerometerStatus) {
+    this.accelerometerStatus = accelerometerStatus;
+  }
+
   public Float getGyroscopeX() {
     return gyroscopeX;
   }
@@ -131,6 +149,14 @@ public class Picture {
 
   public void setGyroscopeZ(Float gyroscopeZ) {
     this.gyroscopeZ = gyroscopeZ;
+  }
+
+  public Integer getGyroscopeStatus() {
+    return gyroscopeStatus;
+  }
+
+  public void setGyroscopeStatus(Integer gyroscopeStatus) {
+    this.gyroscopeStatus = gyroscopeStatus;
   }
 
   public Float getRotationX() {
@@ -165,12 +191,20 @@ public class Picture {
     this.rotationCosine = rotationCosine;
   }
 
-  public Float getRotationAccuracy() {
-    return rotationAccuracy;
+  public Integer getRotationStatus() {
+    return rotationStatus;
   }
 
-  public void setRotationAccuracy(Float rotationAccuracy) {
-    this.rotationAccuracy = rotationAccuracy;
+  public void setRotationStatus(Integer rotationStatus) {
+    this.rotationStatus = rotationStatus;
+  }
+
+  public GeoPt getLocation() {
+    return location;
+  }
+
+  public void setLocation(GeoPt location) {
+    this.location = location;
   }
 
   public Float getLocationAccuracy() {
@@ -205,11 +239,27 @@ public class Picture {
     this.locationTime = locationTime;
   }
 
-  public LatLng getLocation() {
-    return location;
+  public Float getAzimuth() {
+    return azimuth;
   }
 
-  public void setLocation(LatLng location) {
-    this.location = location;
+  public void setAzimuth(Float azimuth) {
+    this.azimuth = azimuth;
+  }
+
+  public Float getPitch() {
+    return pitch;
+  }
+
+  public void setPitch(Float pitch) {
+    this.pitch = pitch;
+  }
+
+  public Float getRoll() {
+    return roll;
+  }
+
+  public void setRoll(Float roll) {
+    this.roll = roll;
   }
 }

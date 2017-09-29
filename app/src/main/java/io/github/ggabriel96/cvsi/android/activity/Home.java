@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -41,12 +42,13 @@ import io.github.ggabriel96.cvsi.android.background.LocationHandler;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
 import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
 import io.github.ggabriel96.cvsi.android.background.RotationService;
-import io.github.ggabriel96.cvsi.android.camera.ShootingActivity;
 import io.github.ggabriel96.cvsi.android.controller.RotationAdapter;
 import io.github.ggabriel96.cvsi.android.fragment.Albums;
 import io.github.ggabriel96.cvsi.android.fragment.Locations;
 import io.github.ggabriel96.cvsi.android.fragment.Profile;
 import io.github.ggabriel96.cvsi.android.model.SensorData;
+import io.github.ggabriel96.cvsi.android.sql.SQLiteContract;
+import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
 import io.github.ggabriel96.cvsi.android.util.EntityConverter;
 import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
 import lombok.Getter;
@@ -81,6 +83,9 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   private SensorData sensorData;
   private LocationHandler locationHandler;
 
+  private SQLiteHelper sqLiteHelper;
+  private SQLiteDatabase sqLiteDatabase;
+
   /*
    * https://firebase.google.com/docs/database/android/read-and-write
    * https://firebase.google.com/docs/reference/android/com/google/firebase/database/DatabaseReference
@@ -104,6 +109,8 @@ public class Home extends AppCompatActivity implements ServiceConnection {
            */
           Log.d(TAG, "onAuthStateChanged:signed_in: " + Home.this.firebaseUser.getEmail() + " (" + Home.this.firebaseUser.getUid() + ")");
           Home.this.init(savedInstanceState != null ? savedInstanceState.getInt(Home.STATE_FRAGMENT_ID) : null);
+          Home.this.sqLiteHelper = new SQLiteHelper(Home.this);
+          Home.this.sqLiteDatabase = Home.this.sqLiteHelper.getWritableDatabase();
         } else {
           // User is signed out
           Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -143,6 +150,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     Log.d(TAG, "onDestroy");
     super.onDestroy();
     if (Home.networkListener != null) networkListener.unregister(this);
+    this.sqLiteHelper.close();
   }
 
   @Override
@@ -163,28 +171,26 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         this.locationHandler.disconnect();
         if (resultCode == Home.RESULT_OK) {
           RotationAdapter rotationAdapter = this.rotationService.getRotationAdapter();
-          this.unbindService(this);
           broadcastNewPicture(this.captureResult);
-
         }
+        this.unbindService(this);
         break;
       default:
         super.onActivityResult(requestCode, resultCode, data);
     }
   }
 
-  private void uploadPictureToDatastore(final Uri uri) {
+  private void savePictureMetadata(final Uri uri, final RotationAdapter rotationAdapter) {
     final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
     firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
       @Override
       public void onComplete(@NonNull Task<GetTokenResult> task) {
         if (Home.networkListener.isOnline()) {
-          Picture picture = Home.entityConverter.pictureToJson(uri);
-          picture.setUser(Home.entityConverter.userToJson(firebaseUser));
-          picture.setLocation(Home.entityConverter.locationToJson(ShootingActivity.this.locationHandler.getLastLocation()));
-          new PictureEndpoint(ShootingActivity.this, task.getResult().getToken()).execute(picture);
+          Picture picture = Home.entityConverter.pictureToJson(uri, Home.entityConverter.userToJson(firebaseUser), rotationAdapter);
+          new PictureEndpoint(Home.this, task.getResult().getToken()).execute(picture);
+          Home.this.saveToSQLite(uri, picture);
         } else {
-          Toast.makeText(ShootingActivity.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
+          Toast.makeText(Home.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
         }
       }
     });
@@ -192,22 +198,32 @@ public class Home extends AppCompatActivity implements ServiceConnection {
 
   private void uploadPictureToStorage(final Uri uri) {
     final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
-    StorageReference imageRef = this.storageRef.child(pictureLocation);
-    Toast.makeText(ShootingActivity.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
+    StorageReference imageRef = Home.storage.getReference().child(pictureLocation);
+    Toast.makeText(Home.this, R.string.upload_started, Toast.LENGTH_SHORT).show();
     imageRef.putFile(uri)
       .addOnFailureListener(new OnFailureListener() {
         @Override
         public void onFailure(@NonNull Exception exception) {
           Log.e(TAG, "Image upload failed.", exception);
-          Toast.makeText(ShootingActivity.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
+          Toast.makeText(Home.this, R.string.upload_failed, Toast.LENGTH_SHORT).show();
         }
       }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
       @Override
       public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
         Log.d(TAG, "Upload successful");
-        Toast.makeText(ShootingActivity.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
+        Toast.makeText(Home.this, R.string.upload_successful, Toast.LENGTH_SHORT).show();
       }
     });
+  }
+
+  private void saveToSQLite(Uri uri, Picture picture) {
+    this.sqLiteDatabase.insert(
+      SQLiteContract.PictureEntry.TABLE_NAME
+      , null
+      , SQLiteContract.PictureEntry.getContentValues(
+        uri.getPath(), picture, null
+      )
+    );
   }
 
   @Override

@@ -67,6 +67,7 @@ public class RotationService extends Service implements SensorEventListener {
   public RotationAdapter getRotationAdapter() {
     return this.rotationAdapter;
   }
+
   public void stopListener() {
     this.sensorManager.unregisterListener(this);
     this.sensorManager = null;

@@ -16,7 +16,6 @@ public class SensorData implements Comparable<SensorData> {
     float[] rotationMatrix = new float[9], orientationValues = new float[3];
     SensorManager.getRotationMatrixFromVector(rotationMatrix, this.values);
     SensorManager.getOrientation(rotationMatrix, orientationValues);
-    //Log.d(TAG, "orientation values: " + Arrays.toString(orientationValues));
     return orientationValues;
   }
 
