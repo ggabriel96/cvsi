@@ -166,14 +166,20 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         }
         break;
       case Home.REQUEST_IMAGE_CAPTURE:
+        Log.d(TAG, "onActivityResult 2");
         this.rotationService.stopListener();
+        Log.d(TAG, "onActivityResult 3");
         this.locationHandler.stopLocationUpdates();
+        Log.d(TAG, "onActivityResult 4");
         this.locationHandler.disconnect();
         if (resultCode == Home.RESULT_OK) {
           RotationAdapter rotationAdapter = this.rotationService.getRotationAdapter();
+          this.rotationService.stopSelf();
           broadcastNewPicture(this.captureResult);
+          savePictureMetadata(Home.this.captureResult, rotationAdapter);
+          uploadPictureToStorage(Home.this.captureResult);
+          Log.d(TAG, "onActivityResult 5");
         }
-        this.unbindService(this);
         break;
       default:
         super.onActivityResult(requestCode, resultCode, data);
@@ -195,7 +201,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
       }
     });
   }
-
   private void uploadPictureToStorage(final Uri uri) {
     final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
     StorageReference imageRef = Home.storage.getReference().child(pictureLocation);
@@ -293,7 +298,8 @@ public class Home extends AppCompatActivity implements ServiceConnection {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Home.this.captureResult);
                 Intent intent = new Intent(Home.this, RotationService.class);
                 Home.this.bindService(intent, Home.this, Context.BIND_AUTO_CREATE);
-                Home.this.startActivityForResult(takePictureIntent, Home.REQUEST_IMAGE_CAPTURE);
+                Home.this.startService(intent);
+//                Home.this.startActivityForResult(takePictureIntent, Home.REQUEST_IMAGE_CAPTURE);
               }
             }
             break;
@@ -346,10 +352,9 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
   }
 
-
-
   @Override
   public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+    Log.d(TAG, "onServiceConnected");
     LocalBinder localBinder = (LocalBinder) iBinder;
     this.rotationService = localBinder.getService();
     this.locationHandler = new LocationHandler(this, this.rotationService.getRotationAdapter());
@@ -359,6 +364,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
 
   @Override
   public void onServiceDisconnected(ComponentName componentName) {
+    Log.d(TAG, "onServiceDisconnected");
     this.rotationService = null;
   }
 

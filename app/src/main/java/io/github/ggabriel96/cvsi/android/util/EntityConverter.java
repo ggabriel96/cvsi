@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.google.api.client.util.DateTime;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.IOException;
 import java.util.Date;
@@ -31,7 +30,7 @@ public class EntityConverter {
     return user;
   }
 
-  public GeoPt locationToJson(android.location.Location androidLocation) throws InvalidProtocolBufferException {
+  public GeoPt locationToJson(android.location.Location androidLocation) throws Exception {
     GeoPt geopoint = new GeoPt();
     geopoint.setLatitude((float) androidLocation.getLatitude());
     geopoint.setLongitude((float) androidLocation.getLongitude());
@@ -69,12 +68,12 @@ public class EntityConverter {
       picture.setRotationY(closestRotation.values[1]);
       picture.setRotationZ(closestRotation.values[2]);
       picture.setRotationCosine(closestRotation.values[3]);
-      picture.setRotationAccuracy(closestRotation.status);
+      picture.setRotationStatus(closestRotation.status);
       float[] apr = closestRotation.getOrientationValues();
       picture.setAzimuth(apr[0]);
       picture.setPitch(apr[1]);
       picture.setRoll(apr[2]);
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
     return picture;

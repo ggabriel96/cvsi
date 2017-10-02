@@ -34,7 +34,27 @@ public class RotationService extends Service implements SensorEventListener {
     } else {
       Log.d(TAG, "registerSensors: Rotation vector not available!");
     }
+
+    if (this.accelerometer != null) {
+      Log.d(TAG, "registerSensors: Accelerometer");
+      this.sensorManager.registerListener(this, this.accelerometer, SensorManager.SENSOR_DELAY_GAME);
+    } else {
+      Log.d(TAG, "registerSensors: Accelerometer not available!");
+    }
+
+    if (gyroscope != null) {
+      Log.d(TAG, "registerSensors: Gyroscope");
+      this.sensorManager.registerListener(this, this.gyroscope, SensorManager.SENSOR_DELAY_GAME);
+    } else {
+      Log.d(TAG, "registerSensors: Gyroscope not available!");
+    }
+
     return this.localBinder;
+  }
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    return super.onStartCommand(intent, flags, startId);
   }
 
   @Override
