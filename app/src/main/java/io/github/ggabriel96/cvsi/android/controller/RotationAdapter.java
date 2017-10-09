@@ -3,6 +3,7 @@ package io.github.ggabriel96.cvsi.android.controller;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.location.Location;
+import android.util.Log;
 
 import com.google.android.gms.location.LocationListener;
 
@@ -26,14 +27,25 @@ public class RotationAdapter implements LocationListener {
 
 
   public RotationAdapter() {
+    int i;
     this.rotationData = new SensorData[MAXSIZE];
+    for (i = 0; i < MAXSIZE; i++) {
+      this.rotationData[i] = new SensorData();
+    }
     this.rotationIndex = 0;
     this.accelerometerData = new SensorData[MAXSIZE];
+    for (i = 0; i < MAXSIZE; i++) {
+      this.accelerometerData[i] = new SensorData();
+    }
     this.accelerometerIndex = 0;
     this.gyroscopeData = new SensorData[MAXSIZE];
+    for (i = 0; i < MAXSIZE; i++) {
+      this.gyroscopeData[i] = new SensorData();
+    }
     this.gyroscopeIndex = 0;
     this.locations = new Location[MAXSIZE];
     this.locationIndex = 0;
+    Log.d(TAG, String.valueOf(this.rotationData[3] == null));
   }
 
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -88,6 +100,7 @@ public class RotationAdapter implements LocationListener {
 
   @Override
   public void onLocationChanged(Location location) {
+    Log.d(TAG, "onLocationChanged");
     if (locationIndex == MAXSIZE) locationIndex = 0;
     this.locations[locationIndex] = location;
     locationIndex++;
@@ -120,7 +133,7 @@ public class RotationAdapter implements LocationListener {
   private int searchTimestamp(SensorData[] sensorDatas, Integer lastIndex, Long timestamp) {
     SensorData sensorData = new SensorData();
     sensorData.timestamp = timestamp;
-    if (lastIndex + 1 < RotationAdapter.MAXSIZE && sensorDatas[lastIndex + 1] != null && timestamp <= sensorDatas[lastIndex].timestamp) {
+    if (lastIndex + 1 < RotationAdapter.MAXSIZE && sensorDatas[lastIndex + 1] != null && sensorDatas[lastIndex + 1].timestamp != null && timestamp <= sensorDatas[lastIndex].timestamp) {
       return Arrays.binarySearch(sensorDatas, lastIndex + 1, RotationAdapter.MAXSIZE, sensorData);
     } else {
       return Arrays.binarySearch(sensorDatas, 0, lastIndex + 1, sensorData);

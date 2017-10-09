@@ -52,11 +52,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name=".camera.ShootingActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustPan">
-        </activity>
+
         <activity
             android:name=".activity.Login"
             android:label="@string/login"
@@ -72,6 +68,7 @@
             android:label="@string/title_activity_maps">
         </activity>
 
+        <service android:name=".background.RotationService"></service>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

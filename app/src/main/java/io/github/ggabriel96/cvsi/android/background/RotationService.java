@@ -28,6 +28,13 @@ public class RotationService extends Service implements SensorEventListener {
   @Nullable
   @Override
   public IBinder onBind(Intent intent) {
+    Log.d(TAG, "onBind");
+    return this.localBinder;
+  }
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    Log.d(TAG, "onStartCommand");
     if (this.rotation != null) {
       Log.d(TAG, "registerSensors: Rotation vector");
       this.sensorManager.registerListener(this, this.rotation, SensorManager.SENSOR_DELAY_GAME);
@@ -49,26 +56,24 @@ public class RotationService extends Service implements SensorEventListener {
       Log.d(TAG, "registerSensors: Gyroscope not available!");
     }
 
-    return this.localBinder;
-  }
-
-  @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {
-    return super.onStartCommand(intent, flags, startId);
+    return START_STICKY;
   }
 
   @Override
   public void onSensorChanged(SensorEvent event) {
+//    Log.d(TAG,"onSensorChanged");
     this.rotationAdapter.onSensorChanged(event);
   }
 
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+//    Log.d(TAG,"onAccuracyChanged");
     this.rotationAdapter.onAccuracyChanged(sensor, accuracy);
   }
 
   @Override
   public void onCreate() {
+    Log.d(TAG, "onCreate");
     super.onCreate();
     this.rotationAdapter = new RotationAdapter();
     this.localBinder = new LocalBinder(this);
@@ -80,6 +85,7 @@ public class RotationService extends Service implements SensorEventListener {
 
   @Override
   public void onDestroy() {
+    Log.d(TAG, "onDestroy");
     super.onDestroy();
     this.stopListener();
   }
@@ -89,6 +95,7 @@ public class RotationService extends Service implements SensorEventListener {
   }
 
   public void stopListener() {
+    Log.d(TAG, "stopListener");
     this.sensorManager.unregisterListener(this);
     this.sensorManager = null;
   }

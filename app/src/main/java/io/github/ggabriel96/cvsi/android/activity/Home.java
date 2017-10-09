@@ -54,6 +54,8 @@ import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
 import lombok.Getter;
 import lombok.Setter;
 
+import static java.lang.Boolean.TRUE;
+
 @Getter
 @Setter
 public class Home extends AppCompatActivity implements ServiceConnection {
@@ -125,6 +127,9 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     Log.d(TAG, "onStart");
     super.onStart();
     Home.auth.addAuthStateListener(this.authListener);
+    Intent intent = new Intent(Home.this, RotationService.class);
+    Home.this.startService(intent);
+    Home.this.bindService(intent, Home.this, Context.BIND_AUTO_CREATE);
   }
 
   @Override
@@ -166,19 +171,16 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         }
         break;
       case Home.REQUEST_IMAGE_CAPTURE:
-        Log.d(TAG, "onActivityResult 2");
-        this.rotationService.stopListener();
-        Log.d(TAG, "onActivityResult 3");
-        this.locationHandler.stopLocationUpdates();
-        Log.d(TAG, "onActivityResult 4");
-        this.locationHandler.disconnect();
+//        this.rotationService.stopListener();
+//        this.locationHandler.stopLocationUpdates();
+//        this.locationHandler.disconnect();
         if (resultCode == Home.RESULT_OK) {
           RotationAdapter rotationAdapter = this.rotationService.getRotationAdapter();
-          this.rotationService.stopSelf();
+          Log.d(TAG, this.captureResult.getPath() + "loooooool");
+//          this.rotationService.stopSelf();
           broadcastNewPicture(this.captureResult);
           savePictureMetadata(Home.this.captureResult, rotationAdapter);
           uploadPictureToStorage(Home.this.captureResult);
-          Log.d(TAG, "onActivityResult 5");
         }
         break;
       default:
@@ -192,6 +194,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
       @Override
       public void onComplete(@NonNull Task<GetTokenResult> task) {
         if (Home.networkListener.isOnline()) {
+          Log.d(TAG, uri.getPath() + "1 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
           Picture picture = Home.entityConverter.pictureToJson(uri, Home.entityConverter.userToJson(firebaseUser), rotationAdapter);
           new PictureEndpoint(Home.this, task.getResult().getToken()).execute(picture);
           Home.this.saveToSQLite(uri, picture);
@@ -222,6 +225,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   }
 
   private void saveToSQLite(Uri uri, Picture picture) {
+    Log.d(TAG, picture.getLocation().toString() + " loçlaksçak");
     this.sqLiteDatabase.insert(
       SQLiteContract.PictureEntry.TABLE_NAME
       , null
@@ -292,14 +296,14 @@ public class Home extends AppCompatActivity implements ServiceConnection {
               }
               // Continue only if the File was successfully created
               if (photoFile != null) {
+                Log.d(TAG, "uiasgugfisadugfklsdgvklsdjgvksdj.d k" + photoFile.getPath());
                 Home.this.captureResult = FileProvider.getUriForFile(Home.this,
                   Home.this.getResources().getString(R.string.provider_authority),
                   photoFile);
+                Log.d(TAG, "uiasgugfisadugfklsdgvklsdjgvdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddksdj.d k" + captureResult.getPath());
+
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Home.this.captureResult);
-                Intent intent = new Intent(Home.this, RotationService.class);
-                Home.this.bindService(intent, Home.this, Context.BIND_AUTO_CREATE);
-                Home.this.startService(intent);
-//                Home.this.startActivityForResult(takePictureIntent, Home.REQUEST_IMAGE_CAPTURE);
+                Home.this.startActivityForResult(takePictureIntent, Home.REQUEST_IMAGE_CAPTURE);
               }
             }
             break;
@@ -359,6 +363,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     this.rotationService = localBinder.getService();
     this.locationHandler = new LocationHandler(this, this.rotationService.getRotationAdapter());
     this.locationHandler.build();
+    this.locationHandler.connect(TRUE);
     this.locationHandler.startLocationUpdates();
   }
 

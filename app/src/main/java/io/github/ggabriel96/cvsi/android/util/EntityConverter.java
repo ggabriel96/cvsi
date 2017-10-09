@@ -42,6 +42,7 @@ public class EntityConverter {
     try {
       picture = new Picture();
       ExifInterface exifInterface = this.getExif(uri);
+      Log.d(TAG, uri.getPath() + "2 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
       Long picTimestamp = exifInterface.getDateTime();
       android.location.Location closestLocation = rotationAdapter.findClosestLocation(picTimestamp);
       SensorData closestAccelerometer = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_ACCELEROMETER);
@@ -84,6 +85,7 @@ public class EntityConverter {
   }
 
   public ExifInterface getExif(Uri uri) throws IOException {
+    Log.d(TAG, uri.getPath() + "3 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
     return new ExifInterface(uri.getPath());
   }
 }
