@@ -174,9 +174,12 @@ public class Home extends AppCompatActivity implements ServiceConnection {
 //        this.rotationService.stopListener();
 //        this.locationHandler.stopLocationUpdates();
 //        this.locationHandler.disconnect();
+
+        //https://stackoverflow.com/questions/5657411/android-getting-a-file-uri-from-a-content-uri
+        //THE PROBLEM IS THAT THIS IS A CONTENT URI, NOT A NORMAL ONE.
+        //WE GOTTA ACCESS THE UNDERLYING FILE THROUGH A CONTENT PROVIDER.
         if (resultCode == Home.RESULT_OK) {
           RotationAdapter rotationAdapter = this.rotationService.getRotationAdapter();
-          Log.d(TAG, this.captureResult.getPath() + "loooooool");
 //          this.rotationService.stopSelf();
           broadcastNewPicture(this.captureResult);
           savePictureMetadata(Home.this.captureResult, rotationAdapter);
@@ -194,7 +197,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
       @Override
       public void onComplete(@NonNull Task<GetTokenResult> task) {
         if (Home.networkListener.isOnline()) {
-          Log.d(TAG, uri.getPath() + "1 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
           Picture picture = Home.entityConverter.pictureToJson(uri, Home.entityConverter.userToJson(firebaseUser), rotationAdapter);
           new PictureEndpoint(Home.this, task.getResult().getToken()).execute(picture);
           Home.this.saveToSQLite(uri, picture);
@@ -300,9 +302,10 @@ public class Home extends AppCompatActivity implements ServiceConnection {
                 Home.this.captureResult = FileProvider.getUriForFile(Home.this,
                   Home.this.getResources().getString(R.string.provider_authority),
                   photoFile);
-                Log.d(TAG, "uiasgugfisadugfklsdgvklsdjgvdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddksdj.d k" + captureResult.getPath());
 
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Home.this.captureResult);
+                Log.d(TAG, String.valueOf(photoFile.exists()) + "335");
+                Log.d(TAG, String.valueOf(new File(captureResult.getPath()).exists()) + "335");
                 Home.this.startActivityForResult(takePictureIntent, Home.REQUEST_IMAGE_CAPTURE);
               }
             }
