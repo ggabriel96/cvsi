@@ -121,19 +121,28 @@ public class RotationAdapter implements LocationListener {
 
   private SensorData findClosestSensorData(SensorData[] sensorDatas, Integer lastestIndex, Long timestamp) {
     int index = searchTimestamp(sensorDatas, lastestIndex, timestamp);
-    if (index < 0) {
+    if (index < -1) {
       index = -(index + 2);
       Long timeDelta = Math.abs(sensorDatas[index].timestamp - timestamp);
       Long previousTimeDelta = Math.abs(sensorDatas[index - 1].timestamp - timestamp);
       return sensorDatas[(timeDelta <= previousTimeDelta) ? index : index - 1];
     }
+    if (index == -1) {
+      if (sensorDatas[MAXSIZE - 1].timestamp != null) {
+        Long timeDelta = Math.abs(sensorDatas[0].timestamp - timestamp);
+        Long previousTimeDelta = Math.abs(sensorDatas[MAXSIZE - 1].timestamp - timestamp);
+        return sensorDatas[(timeDelta <= previousTimeDelta) ? 0 : MAXSIZE - 1];
+      }
+      return sensorDatas[0];
+    }
+
     return sensorDatas[index];
   }
 
   private int searchTimestamp(SensorData[] sensorDatas, Integer lastIndex, Long timestamp) {
     SensorData sensorData = new SensorData();
     sensorData.timestamp = timestamp;
-    if (lastIndex + 1 < RotationAdapter.MAXSIZE && sensorDatas[lastIndex + 1] != null && sensorDatas[lastIndex + 1].timestamp != null && timestamp <= sensorDatas[lastIndex].timestamp) {
+    if (lastIndex + 1 < RotationAdapter.MAXSIZE && sensorDatas[lastIndex + 1] != null && sensorDatas[lastIndex + 1].timestamp != null && timestamp <= sensorDatas[RotationAdapter.MAXSIZE - 1].timestamp) {
       return Arrays.binarySearch(sensorDatas, lastIndex + 1, RotationAdapter.MAXSIZE, sensorData);
     } else {
       return Arrays.binarySearch(sensorDatas, 0, lastIndex + 1, sensorData);
@@ -142,11 +151,19 @@ public class RotationAdapter implements LocationListener {
 
   public Location findClosestLocation(Long timestamp) {
     int index = searchTimestamp(this.locations, this.locationIndex, timestamp);
-    if (index < 0) {
+    if (index < -1) {
       index = -(index + 2);
       Long timeDelta = Math.abs(this.locations[index].getTime() - timestamp);
       Long previousTimeDelta = Math.abs(this.locations[index - 1].getTime() - timestamp);
       return this.locations[(timeDelta <= previousTimeDelta) ? index : index - 1];
+    }
+    if (index == -1) {
+      if (this.locations[MAXSIZE - 1] != null) {
+        Long timeDelta = Math.abs(this.locations[0].getTime() - timestamp);
+        Long previousTimeDelta = Math.abs(this.locations[RotationAdapter.MAXSIZE - 1].getTime() - timestamp);
+        return this.locations[(timeDelta <= previousTimeDelta) ? 0 : MAXSIZE - 1];
+      }
+      return this.locations[0];
     }
     return this.locations[index];
   }
@@ -154,7 +171,7 @@ public class RotationAdapter implements LocationListener {
   private int searchTimestamp(Location[] locations, Integer lastIndex, Long timestamp) {
     Location location = new Location("manual");
     location.setTime(timestamp);
-    if (lastIndex + 1 < RotationAdapter.MAXSIZE && locations[lastIndex + 1] != null && timestamp <= locations[lastIndex].getTime()) {
+    if (lastIndex + 1 < RotationAdapter.MAXSIZE && locations[lastIndex + 1] != null && timestamp <= locations[RotationAdapter.MAXSIZE - 1].getTime()) {
       return Arrays.binarySearch(locations, lastIndex + 1, RotationAdapter.MAXSIZE, location, new LocationGeotimeComparator());
     } else {
       return Arrays.binarySearch(locations, 0, lastIndex + 1, location, new LocationGeotimeComparator());

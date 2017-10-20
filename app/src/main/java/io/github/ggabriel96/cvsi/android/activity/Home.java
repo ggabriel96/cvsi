@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.media.ExifInterface;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
@@ -33,6 +34,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -174,16 +176,27 @@ public class Home extends AppCompatActivity implements ServiceConnection {
 //        this.rotationService.stopListener();
 //        this.locationHandler.stopLocationUpdates();
 //        this.locationHandler.disconnect();
-
-        //https://stackoverflow.com/questions/5657411/android-getting-a-file-uri-from-a-content-uri
-        //THE PROBLEM IS THAT THIS IS A CONTENT URI, NOT A NORMAL ONE.
-        //WE GOTTA ACCESS THE UNDERLYING FILE THROUGH A CONTENT PROVIDER.
         if (resultCode == Home.RESULT_OK) {
           RotationAdapter rotationAdapter = this.rotationService.getRotationAdapter();
+          InputStream inputStream = null;
+          ExifInterface exifInterface = null;
+          try {
+            inputStream = this.getContentResolver().openInputStream(this.captureResult);
+            exifInterface = new ExifInterface(inputStream);
+            broadcastNewPicture(this.captureResult);
+            savePictureMetadata(this.captureResult, exifInterface, rotationAdapter);
+            uploadPictureToStorage(this.captureResult);
+          } catch (IOException e) {
+            Toast.makeText(Home.this, "Failed to save picture", Toast.LENGTH_SHORT).show();
+          } finally {
+            if (inputStream != null) {
+              try {
+                inputStream.close();
+              } catch (IOException ignored) {
+              }
+            }
+          }
 //          this.rotationService.stopSelf();
-          broadcastNewPicture(this.captureResult);
-          savePictureMetadata(Home.this.captureResult, rotationAdapter);
-          uploadPictureToStorage(Home.this.captureResult);
         }
         break;
       default:
@@ -191,21 +204,22 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     }
   }
 
-  private void savePictureMetadata(final Uri uri, final RotationAdapter rotationAdapter) {
+  private void savePictureMetadata(final Uri uri, final ExifInterface exifInterface, final RotationAdapter rotationAdapter) {
     final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
     firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
       @Override
       public void onComplete(@NonNull Task<GetTokenResult> task) {
         if (Home.networkListener.isOnline()) {
-          Picture picture = Home.entityConverter.pictureToJson(uri, Home.entityConverter.userToJson(firebaseUser), rotationAdapter);
+          Picture picture = Home.entityConverter.pictureToJson(uri.getLastPathSegment(), exifInterface, Home.entityConverter.userToJson(firebaseUser), rotationAdapter);
           new PictureEndpoint(Home.this, task.getResult().getToken()).execute(picture);
-          Home.this.saveToSQLite(uri, picture);
+          Home.this.saveToSQLite(uri.getPath(), picture);
         } else {
           Toast.makeText(Home.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
         }
       }
     });
   }
+
   private void uploadPictureToStorage(final Uri uri) {
     final String pictureLocation = "images/" + Home.auth.getCurrentUser().getUid() + "/" + uri.getLastPathSegment();
     StorageReference imageRef = Home.storage.getReference().child(pictureLocation);
@@ -226,13 +240,12 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     });
   }
 
-  private void saveToSQLite(Uri uri, Picture picture) {
-    Log.d(TAG, picture.getLocation().toString() + " loçlaksçak");
+  private void saveToSQLite(String path, Picture picture) {
     this.sqLiteDatabase.insert(
       SQLiteContract.PictureEntry.TABLE_NAME
       , null
       , SQLiteContract.PictureEntry.getContentValues(
-        uri.getPath(), picture, null
+        path, picture, null
       )
     );
   }
@@ -298,7 +311,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
               }
               // Continue only if the File was successfully created
               if (photoFile != null) {
-                Log.d(TAG, "uiasgugfisadugfklsdgvklsdjgvksdj.d k" + photoFile.getPath());
                 Home.this.captureResult = FileProvider.getUriForFile(Home.this,
                   Home.this.getResources().getString(R.string.provider_authority),
                   photoFile);

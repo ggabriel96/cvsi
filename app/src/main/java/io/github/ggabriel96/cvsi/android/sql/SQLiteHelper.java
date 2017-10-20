@@ -42,7 +42,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
       + SQLiteContract.PictureEntry.COLUMN_ROTATION_VECTOR_Y + " real,"
       + SQLiteContract.PictureEntry.COLUMN_ROTATION_VECTOR_Z + " real,"
       + SQLiteContract.PictureEntry.COLUMN_ROTATION_COSINE + " real,"
-      + SQLiteContract.PictureEntry.COLUMN_ROTATION_STATUS + " integer"
+    + SQLiteContract.PictureEntry.COLUMN_ROTATION_STATUS + " integer,"
       + SQLiteContract.PictureEntry.COLUMN_AZIMUTH + " real,"
       + SQLiteContract.PictureEntry.COLUMN_PITCH + " real,"
       + SQLiteContract.PictureEntry.COLUMN_ROLL + " real,"

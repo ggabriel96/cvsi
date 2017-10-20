@@ -37,12 +37,10 @@ public class EntityConverter {
     return geopoint;
   }
 
-  public Picture pictureToJson(Uri uri, User user, RotationAdapter rotationAdapter) {
+  public Picture pictureToJson(String title, ExifInterface exifInterface, User user, RotationAdapter rotationAdapter) {
     Picture picture = null;
     try {
       picture = new Picture();
-      ExifInterface exifInterface = this.getExif(uri);
-      Log.d(TAG, uri.getPath() + "2 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
       Long picTimestamp = exifInterface.getDateTime();
       android.location.Location closestLocation = rotationAdapter.findClosestLocation(picTimestamp);
       SensorData closestAccelerometer = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_ACCELEROMETER);
@@ -51,7 +49,7 @@ public class EntityConverter {
       picture.setUser(user);
       picture.setCaptured(new DateTime(picTimestamp));
       picture.setDescription("Description");
-      picture.setTitle(uri.getLastPathSegment());
+      picture.setTitle(title);
       picture.setLocation(this.locationToJson(closestLocation));
       picture.setLocationAccuracy(closestLocation.getAccuracy());
       picture.setLocationBearing(closestLocation.getBearing());
