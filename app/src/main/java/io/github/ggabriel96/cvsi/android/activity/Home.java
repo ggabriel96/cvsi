@@ -53,7 +53,7 @@ import io.github.ggabriel96.cvsi.android.sql.SQLiteContract;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
 import io.github.ggabriel96.cvsi.android.util.EntityConverter;
 import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
-import lombok.Getter;
+import lombok.Getter;bim
 import lombok.Setter;
 
 import static java.lang.Boolean.TRUE;
