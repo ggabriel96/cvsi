@@ -23,8 +23,8 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
  * An endpoint class we are exposing
  * <p>
  * Generate openapi.json:
- * ./endpoints-framework-tools-2.0.8/bin/endpoints-framework-tools get-openapi-doc --hostname=cvsi-backend.appspot.com --war=./backend/build/exploded-app io.github.ggabriel96.cvsi.backend.MyEndpoint
- * ./endpoints-framework-tools-2.0.8/bin/endpoints-framework-tools get-client-lib --war=./backend/build/exploded-app -bs gradle io.github.ggabriel96.cvsi.backend.MyEndpoint
+ * ./endpoints-framework-tools-2.0.13/bin/endpoints-framework-tools get-openapi-doc --hostname=cvsi-backend.appspot.com --war=./backend/build/exploded-app io.github.ggabriel96.cvsi.backend.MyEndpoint
+ * ./endpoints-framework-tools-2.0.13/bin/endpoints-framework-tools get-client-lib --war=./backend/build/exploded-app -bs gradle io.github.ggabriel96.cvsi.backend.MyEndpoint
 
  * Then publish:
  * gcloud service-management deploy openapi.json
