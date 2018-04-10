@@ -1,11 +1,14 @@
 package io.github.ggabriel96.cvsi.android.sql;
 
 import android.content.ContentValues;
+import android.hardware.Sensor;
 import android.provider.BaseColumns;
+import android.support.media.ExifInterface;
 
 import java.util.Date;
 
-import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
+import io.github.ggabriel96.cvsi.android.controller.RotationAdapter;
+import io.github.ggabriel96.cvsi.android.model.SensorData;
 
 
 public final class SQLiteContract {
@@ -73,40 +76,45 @@ public final class SQLiteContract {
     public static final String COLUMN_AZIMUTH = "azimuth";
     public static final String COLUMN_PITCH = "pitch";
     public static final String COLUMN_ROLL = "roll";
-    public static final String COLUMN_ALBUM = "album";
-    public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_TITLE = "title";
-    //public static final String COLUMN_USER = "user";
 
-
-    public static ContentValues getContentValues(String path, Picture picture, String album) {
+    public static ContentValues getContentValues(String path, String title, ExifInterface exifInterface, RotationAdapter rotationAdapter) {
       ContentValues contentValues = new ContentValues();
-      contentValues.put(PictureEntry.COLUMN_PATH, path);
-      contentValues.put(PictureEntry.COLUMN_LATITUDE, picture.getLocation().getLatitude());
-      contentValues.put(PictureEntry.COLUMN_LONGITUDE, picture.getLocation().getLongitude());
-      contentValues.put(PictureEntry.COLUMN_LOCATION_ACCURACY, picture.getLocationAccuracy());
-      contentValues.put(PictureEntry.COLUMN_LOCATION_BEARING, picture.getLocationBearing());
-      contentValues.put(PictureEntry.COLUMN_LOCATION_PROVIDER, picture.getLocationProvider());
-      contentValues.put(PictureEntry.COLUMN_LOCATION_TIME, picture.getLocationTime().getValue());
-      contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_X, picture.getAccelerometerX());
-      contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_Y, picture.getAccelerometerY());
-      contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_Z, picture.getAccelerometerZ());
-      contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_STATUS, picture.getAccelerometerStatus());
-      contentValues.put(PictureEntry.COLUMN_GYROSCOPE_X, picture.getGyroscopeX());
-      contentValues.put(PictureEntry.COLUMN_GYROSCOPE_Y, picture.getGyroscopeY());
-      contentValues.put(PictureEntry.COLUMN_GYROSCOPE_Z, picture.getGyroscopeZ());
-      contentValues.put(PictureEntry.COLUMN_GYROSCOPE_STATUS, picture.getGyroscopeStatus());
-      contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_X, picture.getRotationX());
-      contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_Y, picture.getRotationY());
-      contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_Z, picture.getRotationZ());
-      contentValues.put(PictureEntry.COLUMN_ROTATION_COSINE, picture.getRotationCosine());
-      contentValues.put(PictureEntry.COLUMN_ROTATION_STATUS, picture.getRotationStatus());
-      contentValues.put(PictureEntry.COLUMN_AZIMUTH, picture.getAzimuth());
-      contentValues.put(PictureEntry.COLUMN_PITCH, picture.getPitch());
-      contentValues.put(PictureEntry.COLUMN_ROLL, picture.getRoll());
-      contentValues.put(PictureEntry.COLUMN_ALBUM, album);
-      contentValues.put(PictureEntry.COLUMN_DESCRIPTION, picture.getDescription());
-      contentValues.put(PictureEntry.COLUMN_TITLE, picture.getTitle());
+      try {
+        Long picTimestamp = Long.valueOf(exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL));
+        android.location.Location closestLocation = rotationAdapter.findClosestLocation(picTimestamp);
+        SensorData closestAccelerometer = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_ACCELEROMETER);
+        SensorData closestGyroscope = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_GYROSCOPE);
+        SensorData closestRotation = rotationAdapter.findClosestSensorData(picTimestamp, Sensor.TYPE_ROTATION_VECTOR);
+        contentValues.put(PictureEntry.COLUMN_PATH, path);
+        contentValues.put(PictureEntry.COLUMN_LATITUDE, closestLocation.getLatitude());
+        contentValues.put(PictureEntry.COLUMN_LONGITUDE, closestLocation.getLongitude());
+        contentValues.put(PictureEntry.COLUMN_LOCATION_ACCURACY, closestLocation.getAccuracy());
+        contentValues.put(PictureEntry.COLUMN_LOCATION_BEARING, closestLocation.getBearing());
+        contentValues.put(PictureEntry.COLUMN_LOCATION_PROVIDER, closestLocation.getProvider());
+        contentValues.put(PictureEntry.COLUMN_LOCATION_TIME, closestLocation.getTime());
+        contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_X, closestAccelerometer.values[0]);
+        contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_Y, closestAccelerometer.values[1]);
+        contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_Z, closestAccelerometer.values[2]);
+        contentValues.put(PictureEntry.COLUMN_ACCELEROMETER_STATUS, closestAccelerometer.status);
+        contentValues.put(PictureEntry.COLUMN_GYROSCOPE_X, closestGyroscope.values[0]);
+        contentValues.put(PictureEntry.COLUMN_GYROSCOPE_Y, closestGyroscope.values[1]);
+        contentValues.put(PictureEntry.COLUMN_GYROSCOPE_Z, closestGyroscope.values[2]);
+        contentValues.put(PictureEntry.COLUMN_GYROSCOPE_STATUS, closestGyroscope.status);
+        contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_X, closestGyroscope.values[0]);
+        contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_Y, closestGyroscope.values[1]);
+        contentValues.put(PictureEntry.COLUMN_ROTATION_VECTOR_Z, closestGyroscope.values[2]);
+        contentValues.put(PictureEntry.COLUMN_ROTATION_COSINE, closestRotation.values[3]);
+        contentValues.put(PictureEntry.COLUMN_ROTATION_STATUS, closestRotation.status);
+        float[] apr = closestRotation.getOrientationValues();
+        contentValues.put(PictureEntry.COLUMN_AZIMUTH, apr[0]);
+        contentValues.put(PictureEntry.COLUMN_PITCH, apr[1]);
+        contentValues.put(PictureEntry.COLUMN_ROLL, apr[2]);
+        contentValues.put(PictureEntry.COLUMN_TITLE, title);
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
       return contentValues;
     }
   }

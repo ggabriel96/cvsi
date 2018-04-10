@@ -21,13 +21,10 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -42,28 +39,14 @@ import io.github.ggabriel96.cvsi.android.R;
 import io.github.ggabriel96.cvsi.android.background.LocalBinder;
 import io.github.ggabriel96.cvsi.android.background.LocationHandler;
 import io.github.ggabriel96.cvsi.android.background.NetworkListener;
-import io.github.ggabriel96.cvsi.android.background.PictureEndpoint;
 import io.github.ggabriel96.cvsi.android.background.RotationService;
 import io.github.ggabriel96.cvsi.android.controller.RotationAdapter;
-import io.github.ggabriel96.cvsi.android.fragment.Albums;
-import io.github.ggabriel96.cvsi.android.fragment.Locations;
-import io.github.ggabriel96.cvsi.android.fragment.Profile;
-import io.github.ggabriel96.cvsi.android.model.SensorData;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteContract;
 import io.github.ggabriel96.cvsi.android.sql.SQLiteHelper;
-import io.github.ggabriel96.cvsi.android.util.EntityConverter;
-import io.github.ggabriel96.cvsi.backend.myApi.model.Picture;
-import lombok.Getter;
-import lombok.Setter;
 
-import static java.lang.Boolean.TRUE;
-
-@Getter
-@Setter
 public class Home extends AppCompatActivity implements ServiceConnection {
 
   public static final FirebaseAuth auth = FirebaseAuth.getInstance();
-  public static final EntityConverter entityConverter = new EntityConverter();
   public static final NetworkListener networkListener = new NetworkListener();
   public static final FirebaseStorage storage = FirebaseStorage.getInstance();
 
@@ -73,9 +56,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   private static final int REQUEST_IMAGE_CAPTURE = 3;
   private static final String STATE_FRAGMENT_ID = "currentFragmentId";
 
-  private Albums albums;
-  private Profile profile;
-  private Locations locations;
   private Uri captureResult;
   private FirebaseUser firebaseUser;
   private Integer currentFragmentId;
@@ -84,7 +64,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   private FirebaseAuth.AuthStateListener authListener;
 
   private RotationService rotationService;
-  private SensorData sensorData;
   private LocationHandler locationHandler;
 
   private SQLiteHelper sqLiteHelper;
@@ -205,19 +184,13 @@ public class Home extends AppCompatActivity implements ServiceConnection {
   }
 
   private void savePictureMetadata(final Uri uri, final ExifInterface exifInterface, final RotationAdapter rotationAdapter) {
-    final FirebaseUser firebaseUser = Home.auth.getCurrentUser();
-    firebaseUser.getToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-      @Override
-      public void onComplete(@NonNull Task<GetTokenResult> task) {
-        if (Home.networkListener.isOnline()) {
-          Picture picture = Home.entityConverter.pictureToJson(uri.getLastPathSegment(), exifInterface, Home.entityConverter.userToJson(firebaseUser), rotationAdapter);
-          new PictureEndpoint(Home.this, task.getResult().getToken()).execute(picture);
-          Home.this.saveToSQLite(uri.getPath(), picture);
-        } else {
-          Toast.makeText(Home.this, R.string.disconnected, Toast.LENGTH_SHORT).show();
-        }
-      }
-    });
+    this.sqLiteDatabase.insert(
+      SQLiteContract.PictureEntry.TABLE_NAME
+      , null
+      , SQLiteContract.PictureEntry.getContentValues(
+        uri.getPath(), uri.getLastPathSegment(), exifInterface, rotationAdapter
+      )
+    );
   }
 
   private void uploadPictureToStorage(final Uri uri) {
@@ -240,16 +213,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     });
   }
 
-  private void saveToSQLite(String path, Picture picture) {
-    this.sqLiteDatabase.insert(
-      SQLiteContract.PictureEntry.TABLE_NAME
-      , null
-      , SQLiteContract.PictureEntry.getContentValues(
-        path, picture, null
-      )
-    );
-  }
-
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
@@ -263,8 +226,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         }
         return true;
       case R.id.fix_location:
-        Intent maps = new Intent(Home.this, MapsActivity.class);
-        Home.this.startActivity(maps);
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -273,17 +234,9 @@ public class Home extends AppCompatActivity implements ServiceConnection {
 
   private void init(Integer currentFragmentId) {
     Log.d(TAG, "init");
-    this.instantiateFragments();
     this.setContentView(R.layout.activity_home);
     this.setupBottomNavigation();
     this.setCurrentFragment(currentFragmentId);
-  }
-
-  private void instantiateFragments() {
-    Log.d(TAG, "instantiateFragments");
-    this.albums = new Albums();
-    this.profile = new Profile();
-    this.locations = new Locations();
   }
 
   private void setupBottomNavigation() {
@@ -297,7 +250,6 @@ public class Home extends AppCompatActivity implements ServiceConnection {
         Home.this.currentFragmentId = item.getItemId();
         switch (item.getItemId()) {
           case R.id.bottom_navigation_albums:
-            Home.this.setCurrentFragment(Home.this.albums);
             break;
           case R.id.bottom_navigation_camera:
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -323,10 +275,8 @@ public class Home extends AppCompatActivity implements ServiceConnection {
             }
             break;
           case R.id.bottom_navigation_profile:
-            Home.this.setCurrentFragment(Home.this.profile);
             break;
           case R.id.bottom_navigation_locations:
-            Home.this.setCurrentFragment(Home.this.locations);
             break;
         }
         return true;
@@ -378,7 +328,7 @@ public class Home extends AppCompatActivity implements ServiceConnection {
     this.rotationService = localBinder.getService();
     this.locationHandler = new LocationHandler(this, this.rotationService.getRotationAdapter());
     this.locationHandler.build();
-    this.locationHandler.connect(TRUE);
+    this.locationHandler.connect(Boolean.TRUE);
     this.locationHandler.startLocationUpdates();
   }
 

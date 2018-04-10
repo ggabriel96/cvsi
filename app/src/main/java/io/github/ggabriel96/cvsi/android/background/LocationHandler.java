@@ -38,7 +38,7 @@ public class LocationHandler implements GoogleApiClient.ConnectionCallbacks, Goo
     this.requestLocationUpdates = Boolean.FALSE;
     this.isRequestingLocationUpdates = Boolean.FALSE;
 
-    this.locationRequest = new LocationRequest();
+    this.locationRequest = LocationRequest.create();
     this.locationRequest.setInterval(10000);
     this.locationRequest.setFastestInterval(5000);
     this.locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);

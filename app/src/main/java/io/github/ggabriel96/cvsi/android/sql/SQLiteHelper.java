@@ -46,10 +46,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
       + SQLiteContract.PictureEntry.COLUMN_AZIMUTH + " real,"
       + SQLiteContract.PictureEntry.COLUMN_PITCH + " real,"
       + SQLiteContract.PictureEntry.COLUMN_ROLL + " real,"
-    + SQLiteContract.PictureEntry.COLUMN_ALBUM + " text,"
-    + SQLiteContract.PictureEntry.COLUMN_DESCRIPTION + " text,"
-    + SQLiteContract.PictureEntry.COLUMN_TITLE + " text,"
-      + "foreign key (" + SQLiteContract.PictureEntry.COLUMN_ALBUM + ") references "+ SQLiteContract.AlbumEntry.TABLE_NAME + "(" + SQLiteContract.AlbumEntry.COLUMN_TITLE + ")"
+    + SQLiteContract.PictureEntry.COLUMN_TITLE + " text"
       + ");";
 
   public SQLiteHelper(Context context) {
