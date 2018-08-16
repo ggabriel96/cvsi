@@ -3,9 +3,9 @@ package io.github.ggabriel96.cvsi
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -27,13 +27,14 @@ import java.util.*
 
 class Home : AppCompatActivity() {
 
+    private val tag = this.javaClass.simpleName
+
     private val requiredPermissions = listOf(
             Manifest.permission.CAMERA,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_FINE_LOCATION
     )
 
-    private val tag = "Home"
     private var backLens = true
     private var fotoStarted = false
     private var fotoapparat: Fotoapparat? = null
@@ -41,6 +42,7 @@ class Home : AppCompatActivity() {
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
 
     private lateinit var locationListener: LocationListener
+    private lateinit var rotationObserver: RotationObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(tag, "onCreate")
@@ -55,6 +57,8 @@ class Home : AppCompatActivity() {
         super.onStart()
         this.checkPermissions()
         this.startCamera()
+        this.rotationObserver = RotationObserver(this)
+        this.lifecycle.addObserver(this.rotationObserver)
     }
 
     override fun onResume() {
@@ -87,6 +91,7 @@ class Home : AppCompatActivity() {
             val photoFile = this.getPhotoFile()
             val pendingSave = photoResult?.saveToFile(photoFile)
             pendingSave?.whenAvailable { this.broadcastNewPicture(photoFile) }
+            Log.d(tag, "angles: ${this.rotationObserver.angles?.joinToString()}")
         }
 
         settingsButton.setOnClickListener {

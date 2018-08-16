@@ -1,6 +1,5 @@
 package io.github.ggabriel96.cvsi
 
-import android.Manifest
 import android.app.Activity
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
@@ -11,17 +10,18 @@ import com.google.android.gms.location.*
 
 class LocationListener(private val activity: Activity) : LifecycleObserver {
 
-    private val tag = "Location"
-    private var lastLocation: Location? = null
+    private val tag = this.javaClass.simpleName
+
     private var locationCallback: LocationCallback
     private var locationClient: FusedLocationProviderClient
+    var lastLocation: Location? = null
+        private set
 
     init {
         Log.d(tag, "init")
         this.locationClient = LocationServices.getFusedLocationProviderClient(this.activity)
         this.locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
-                Log.d(tag, "ihfuiefhuwie")
                 lastLocation = locationResult?.lastLocation
             }
         }
@@ -31,8 +31,6 @@ class LocationListener(private val activity: Activity) : LifecycleObserver {
     private fun onResume() {
         Log.d(tag, "onResume")
         this.startLocationUpdates()
-//        Permissions.check(this.activity, Manifest.permission.ACCESS_FINE_LOCATION,
-//                Permissions.Code.FINE_LOCATION.ordinal) { this.startLocationUpdates() }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
