@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -19,9 +20,9 @@
         android:clickable="true"
         android:focusable="true"
         android:contentDescription="@string/switch_camera"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         app:srcCompat="@drawable/ic_switch_camera_white_24dp"
         android:background="@android:color/transparent" />
@@ -33,11 +34,10 @@
         android:clickable="true"
         android:focusable="true"
         android:contentDescription="@string/take_picture"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
         app:srcCompat="@drawable/ic_camera_white_24dp" />
 
     <ImageButton
@@ -47,12 +47,11 @@
         android:clickable="true"
         android:focusable="true"
         android:contentDescription="@string/open_settings_menu"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
         app:srcCompat="@drawable/ic_settings_white_24dp"
         android:background="@android:color/transparent" />
-
 
 </android.support.constraint.ConstraintLayout>

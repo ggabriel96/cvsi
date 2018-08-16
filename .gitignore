@@ -32,28 +32,35 @@ proguard/
 # Android Studio captures folder
 captures/
 
-# Intellij
+# IntelliJ
 *.iml
 .idea/workspace.xml
-.idea/misc.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
 
 # Keystore files
+# Uncomment the following line if you do not want to check your keystore files in.
 *.jks
 
-# From Android Studio original .gitignore file
-/.idea/libraries
-.DS_Store
+# External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
 
-# Firebase
-app/google-services.json
-backend/src/main/webapp/WEB-INF/cvsi-backend-firebase.json
+# Google Services (e.g. APIs or Firebase)
+google-services.json
 
-# Doxygen
-doxygen/
+# Freeline
+freeline.py
+freeline/
+freeline_project_description.json
 
-# Misc
-openapi.json
-endpoints-framework-tools-*/
-app/src/debug/res/values/google_maps_api.xml
-app/src/release/res/values/google_maps_api.xml
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+

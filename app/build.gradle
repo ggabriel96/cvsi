@@ -1,80 +1,40 @@
 apply plugin: 'com.android.application'
 
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 26
     defaultConfig {
-        applicationId "io.github.ggabriel96.cvsi.android"
-        minSdkVersion 21
-        targetSdkVersion 25
+        applicationId 'io.github.ggabriel96.cvsi'
+        minSdkVersion 19
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
-        debug {
-            debuggable true
-        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE-FIREBASE.txt'
-        exclude 'META-INF/NOTICE'
+    productFlavors {
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2') {
-        exclude(group: 'com.google.code.findbugs', module: 'jsr305')
-        exclude(group: 'com.android.support', module: 'support-annotations')
-    }
-
-    // Add the Google API client library.
-    // https://github.com/GoogleCloudPlatform/appengine-endpoints-helloendpoints-android/blob/master/HelloEndpointsProject/HelloEndpoints/build.gradle
-    compile('com.google.api-client:google-api-client:1.22.0') {
-        // Exclude artifacts that the Android SDK/Runtime provides.
-        exclude(group: 'xpp3', module: 'xpp3')
-        exclude(group: 'junit', module: 'junit')
-        exclude(group: 'com.google.android', module: 'android')
-        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
-    }
-
-    // Add the Android extensions for the Google API client library.
-    // This will automatically include play services as long as you have download that library
-    // from the Android SDK manager.
-    // Add the Android extensions for the Google API client library.
-    compile('com.google.api-client:google-api-client-android:1.22.0') {
-        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
-        // Exclude play services. Explicitly include it above after you have installed Play
-        // services from the Android SDK manager.
-        exclude(group: 'com.google.android.google-play-services', module: 'google-play-services')
-    }
-
-    // Android extensions for Google HTTP Client.
-    compile('com.google.http-client:google-http-client-android:1.22.0') {
-        exclude(group: 'com.google.android', module: 'android')
-        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
-    }
-
-    compile project(path: ':backend', configuration: 'android-endpoints')
-
-    compile 'com.android.support:design:25.3.1'
-    compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.google.firebase:firebase-auth:10.2.1'
-    compile 'com.google.firebase:firebase-storage:10.2.1'
-    compile 'com.google.android.gms:play-services-location:10.2.1'
-    compile 'com.google.code.findbugs:jsr305:2.0.1'
-    compile 'com.android.support:recyclerview-v7:25.3.1'
-    compile 'com.google.android.gms:play-services-maps:10.2.1'
-    testCompile 'junit:junit:4.12'
-    annotationProcessor 'org.projectlombok:lombok:1.16.14'
-    provided 'org.projectlombok:lombok:1.16.4'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'io.fotoapparat:fotoapparat:2.3.3'
+    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.karumi:dexter:5.0.0'
 }
-
-apply plugin: 'com.google.gms.google-services'
