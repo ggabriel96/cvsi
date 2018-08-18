@@ -20,6 +20,8 @@ import io.fotoapparat.parameter.ScaleType
 import io.fotoapparat.selector.LensPositionSelector
 import io.fotoapparat.selector.back
 import io.fotoapparat.selector.front
+import io.github.ggabriel96.cvsi.observer.LocationListener
+import io.github.ggabriel96.cvsi.observer.RotationObserver
 import kotlinx.android.synthetic.main.activity_home.*
 import java.io.File
 import java.text.SimpleDateFormat

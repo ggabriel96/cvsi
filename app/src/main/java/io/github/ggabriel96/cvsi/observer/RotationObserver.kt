@@ -1,4 +1,4 @@
-package io.github.ggabriel96.cvsi
+package io.github.ggabriel96.cvsi.observer
 
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver

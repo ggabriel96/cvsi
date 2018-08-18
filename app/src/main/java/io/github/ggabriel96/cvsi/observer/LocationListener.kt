@@ -1,4 +1,4 @@
-package io.github.ggabriel96.cvsi
+package io.github.ggabriel96.cvsi.observer
 
 import android.app.Activity
 import android.arch.lifecycle.Lifecycle
@@ -22,7 +22,7 @@ class LocationListener(private val activity: Activity) : LifecycleObserver {
         this.locationClient = LocationServices.getFusedLocationProviderClient(this.activity)
         this.locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
-                lastLocation = locationResult?.lastLocation
+                this@LocationListener.lastLocation = locationResult?.lastLocation
             }
         }
     }
