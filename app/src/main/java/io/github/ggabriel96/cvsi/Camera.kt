@@ -22,12 +22,13 @@ import io.fotoapparat.selector.back
 import io.fotoapparat.selector.front
 import io.github.ggabriel96.cvsi.observer.LocationListener
 import io.github.ggabriel96.cvsi.observer.RotationObserver
-import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.android.synthetic.main.activity_camera.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-class Home : AppCompatActivity() {
+
+class Camera : AppCompatActivity() {
 
     private val tag = this.javaClass.simpleName
 
@@ -49,7 +50,7 @@ class Home : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(tag, "onCreate")
         super.onCreate(savedInstanceState)
-        this.setContentView(R.layout.activity_home)
+        this.setContentView(R.layout.activity_camera)
         this.setClickListeners()
         this.checkPermissions()
     }
@@ -180,12 +181,12 @@ class Home : AppCompatActivity() {
                             for (granted in report.grantedPermissionResponses) {
                                 when (granted.permissionName) {
                                     Manifest.permission.CAMERA -> {
-                                        this@Home.setupCamera()
+                                        this@Camera.setupCamera()
                                     }
                                     Manifest.permission.ACCESS_FINE_LOCATION -> {
-                                        this@Home.locationListener = LocationListener(
-                                                this@Home)
-                                        this@Home.lifecycle.addObserver(this@Home.locationListener)
+                                        this@Camera.locationListener = LocationListener(
+                                                this@Camera)
+                                        this@Camera.lifecycle.addObserver(this@Camera.locationListener)
                                     }
                                 }
                             }
@@ -195,19 +196,19 @@ class Home : AppCompatActivity() {
                             for (denied in report.deniedPermissionResponses) {
                                 when (denied.permissionName) {
                                     Manifest.permission.CAMERA -> {
-                                        Toast.makeText(this@Home,
+                                        Toast.makeText(this@Camera,
                                                 "Camera permission is required to take" +
                                                         " pictures!",
                                                 Toast.LENGTH_LONG).show()
                                     }
                                     Manifest.permission.WRITE_EXTERNAL_STORAGE -> {
-                                        Toast.makeText(this@Home,
+                                        Toast.makeText(this@Camera,
                                                 "External storage permission is required to" +
                                                         " save your pictures!",
                                                 Toast.LENGTH_LONG).show()
                                     }
                                     Manifest.permission.ACCESS_FINE_LOCATION -> {
-                                        Toast.makeText(this@Home,
+                                        Toast.makeText(this@Camera,
                                                 "Location permission is required to geotag" +
                                                         " your pictures!",
                                                 Toast.LENGTH_LONG).show()
