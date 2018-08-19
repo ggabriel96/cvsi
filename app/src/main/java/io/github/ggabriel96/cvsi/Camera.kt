@@ -1,6 +1,7 @@
 package io.github.ggabriel96.cvsi
 
 import android.Manifest
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -22,6 +23,8 @@ import io.fotoapparat.selector.back
 import io.fotoapparat.selector.front
 import io.github.ggabriel96.cvsi.observer.LocationListener
 import io.github.ggabriel96.cvsi.observer.RotationObserver
+import io.github.ggabriel96.cvsi.room.MetadataViewModel
+import io.github.ggabriel96.cvsi.room.fromPictureMetadata
 import kotlinx.android.synthetic.main.activity_camera.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -44,6 +47,7 @@ class Camera : AppCompatActivity() {
     private var cameraConf = CameraConfiguration()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
 
+    private lateinit var metadataViewModel: MetadataViewModel
     private lateinit var locationListener: LocationListener
     private lateinit var rotationObserver: RotationObserver
 
@@ -53,6 +57,8 @@ class Camera : AppCompatActivity() {
         this.setContentView(R.layout.activity_camera)
         this.setClickListeners()
         this.checkPermissions()
+        this.metadataViewModel = ViewModelProviders.of(this).get(
+                MetadataViewModel::class.java)
     }
 
     override fun onStart() {
@@ -94,7 +100,7 @@ class Camera : AppCompatActivity() {
             val photoFile = this.getPhotoFile()
             val pendingSave = photoResult?.saveToFile(photoFile)
             pendingSave?.whenAvailable { this.broadcastNewPicture(photoFile) }
-            Log.d(tag, "angles: ${this.rotationObserver.angles?.joinToString()}")
+            this.saveMetadata(photoFile.name)
         }
 
         settingsButton.setOnClickListener {
@@ -133,13 +139,19 @@ class Camera : AppCompatActivity() {
                 + resources.getString(R.string.app_name))
         if (!picturesDirectory.exists()) picturesDirectory.mkdir()
         val filename = this.uniqueImageName()
-        Log.d(tag, "pictures directory: $picturesDirectory.path")
-        Log.d(tag, "picture filename: $filename")
         return File(picturesDirectory.path + File.separator + filename)
     }
 
+    private fun saveMetadata(filename: String) {
+        val azimuth = this.rotationObserver.angles?.get(0)
+        val pitch = this.rotationObserver.angles?.get(0)
+        val roll = this.rotationObserver.angles?.get(0)
+        this.metadataViewModel.insert(fromPictureMetadata(
+                filename, this.locationListener.lastLocation,
+                azimuth, pitch, roll, this.rotationObserver.accuracy))
+    }
+
     private fun broadcastNewPicture(file: File) {
-        Log.d(tag, "broadcastNewPicture")
         val contentUri = Uri.fromFile(file)
         val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri)
         this.sendBroadcast(mediaScanIntent)
