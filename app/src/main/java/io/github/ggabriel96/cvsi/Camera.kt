@@ -45,7 +45,7 @@ class Camera : AppCompatActivity() {
     private var fotoStarted = false
     private var fotoapparat: Fotoapparat? = null
     private var cameraConf = CameraConfiguration()
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
 
     private lateinit var metadataViewModel: MetadataViewModel
     private lateinit var locationListener: LocationListener

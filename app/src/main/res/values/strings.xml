@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">CVSI</string>
-    <string name="db_name">metadata</string>
+    <string name="db_name">metadata.sqlite3</string>
     <string name="open_settings_menu">Open Settings menu</string>
     <string name="take_picture">Take picture</string>
     <string name="switch_camera">Switch camera</string>
