@@ -13,6 +13,9 @@ interface MetadataDao {
     @Delete
     fun delete(metadata: Metadata)
 
+    @Query("DELETE FROM metadata")
+    fun clear()
+
     @Query("SELECT * FROM metadata WHERE img_filename = :imgFilename")
     fun find(imgFilename: String): Metadata
 

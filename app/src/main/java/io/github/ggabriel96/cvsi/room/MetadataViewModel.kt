@@ -9,4 +9,8 @@ class MetadataViewModel(application: Application) : AndroidViewModel(application
     fun insert(vararg metadatas: Metadata) {
         this.metadataRepository.insert(*metadatas)
     }
+
+    fun list(): List<Metadata> {
+        return this.metadataRepository.list()
+    }
 }

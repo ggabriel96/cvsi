@@ -11,12 +11,21 @@ class MetadataRepository(application: Application) {
         AsyncInserter(this.pictureMetadataDao).execute(*metadatas)
     }
 
-    class AsyncInserter(private val metadataDao: MetadataDao) :
-            AsyncTask<Metadata, Void, Void>() {
+    fun list(): List<Metadata> {
+        return AsyncLister(this.pictureMetadataDao).execute().get()
+    }
+
+    class AsyncInserter(private val metadataDao: MetadataDao) : AsyncTask<Metadata, Void, Void>() {
         override fun doInBackground(vararg params: Metadata): Void? {
             this.metadataDao.insert(*params)
             return null
         }
+    }
 
+    class AsyncLister(private val metadataDao: MetadataDao) :
+            AsyncTask<Void, Void, List<Metadata>>() {
+        override fun doInBackground(vararg params: Void?): List<Metadata> {
+            return this.metadataDao.list()
+        }
     }
 }

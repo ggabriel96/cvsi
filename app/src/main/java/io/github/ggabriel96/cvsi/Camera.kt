@@ -101,10 +101,12 @@ class Camera : AppCompatActivity() {
             val pendingSave = photoResult?.saveToFile(photoFile)
             pendingSave?.whenAvailable { this.broadcastNewPicture(photoFile) }
             this.saveMetadata(photoFile.name)
+            val l = this.metadataViewModel.list()
+            Log.d(tag, l.joinToString("\n"))
         }
 
         settingsButton.setOnClickListener {
-            Toast.makeText(this, "This is a placeholder", Toast.LENGTH_SHORT).show()
+            this.exportMetadataDatabase()
         }
     }
 
@@ -149,6 +151,27 @@ class Camera : AppCompatActivity() {
         this.metadataViewModel.insert(fromPictureMetadata(
                 filename, this.locationListener.lastLocation,
                 azimuth, pitch, roll, this.rotationObserver.accuracy))
+    }
+
+    private fun exportMetadataDatabase() {
+        val outDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS)
+        val db = getDatabasePath(resources.getString(R.string.db_name)).absoluteFile
+        val dbShm = File(db.absolutePath + "-shm")
+        val dbWal = File(db.absolutePath + "-wal")
+        val outDb = File(outDir.path + File.separator + db.name)
+        val outDbShm = File(outDir.path + File.separator + dbShm.name)
+        val outDbWal = File(outDir.path + File.separator + dbWal.name)
+        db.copyTo(outDb, overwrite = true)
+        dbShm.copyTo(outDbShm, overwrite = true)
+        dbWal.copyTo(outDbWal, overwrite = true)
+        if (outDb.exists()) {
+            Toast.makeText(this, "Database exported successfully",
+                    Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Failed to export database",
+                    Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun broadcastNewPicture(file: File) {
