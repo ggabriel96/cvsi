@@ -24,9 +24,9 @@ data class Metadata(
         @ColumnInfo(name = "rotation_accuracy") var rotationAccuracy: Int?
 )
 
-fun fromPictureMetadata(imgFilename: String, location: Location?,
-                        azimuth: Float?, pitch: Float?, roll: Float?,
-                        rotationAccuracy: Int?): Metadata {
+fun fromPictureMetadata(imgFilename: String, location: Location? = null,
+                        azimuth: Float? = null, pitch: Float? = null, roll: Float? = null,
+                        rotationAccuracy: Int? = null): Metadata {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         Metadata(imgFilename, location?.latitude, location?.longitude, location?.altitude,
                 location?.bearing, location?.accuracy, location?.verticalAccuracyMeters,
@@ -34,7 +34,7 @@ fun fromPictureMetadata(imgFilename: String, location: Location?,
                 rotationAccuracy)
     } else {
         Metadata(imgFilename, location?.latitude, location?.longitude, location?.altitude,
-                location?.bearing, location?.accuracy, 0.0f,
-                0.0f, location?.time, azimuth, pitch, roll, rotationAccuracy)
+                location?.bearing, location?.accuracy, null,
+                null, location?.time, azimuth, pitch, roll, rotationAccuracy)
     }
 }

@@ -16,6 +16,6 @@ interface MetadataDao {
     @Query("SELECT * FROM metadata WHERE img_filename = :imgFilename")
     fun find(imgFilename: String): Metadata
 
-    @Query("SELECT * FROM metadata")
+    @Query("SELECT * FROM metadata ORDER BY img_filename DESC")
     fun list(): List<Metadata>
 }
