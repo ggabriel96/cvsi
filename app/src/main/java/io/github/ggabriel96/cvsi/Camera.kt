@@ -26,6 +26,7 @@ import io.github.ggabriel96.cvsi.observer.RotationObserver
 import io.github.ggabriel96.cvsi.room.MetadataViewModel
 import io.github.ggabriel96.cvsi.room.fromPictureMetadata
 import kotlinx.android.synthetic.main.activity_camera.*
+import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -153,25 +154,43 @@ class Camera : AppCompatActivity() {
                 azimuth, pitch, roll, this.rotationObserver.accuracy))
     }
 
+    /**
+     * @TODO convert Toasts to something reportable
+     */
     private fun exportMetadataDatabase() {
-        val outDir = Environment.getExternalStoragePublicDirectory(
+        val dbName = resources.getString(R.string.db_name)
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS)
-        val db = getDatabasePath(resources.getString(R.string.db_name)).absoluteFile
-        val dbShm = File(db.absolutePath + "-shm")
-        val dbWal = File(db.absolutePath + "-wal")
-        val outDb = File(outDir.path + File.separator + db.name)
-        val outDbShm = File(outDir.path + File.separator + dbShm.name)
-        val outDbWal = File(outDir.path + File.separator + dbWal.name)
-        db.copyTo(outDb, overwrite = true)
-        dbShm.copyTo(outDbShm, overwrite = true)
-        dbWal.copyTo(outDbWal, overwrite = true)
-        if (outDb.exists()) {
+        val outDir = File(
+                downloadsDir.path
+                        + File.separator
+                        + resources.getString(R.string.app_name)
+                        + "_" + dbName.replace('.', '_')
+        )
+        if (!outDir.exists()) {
+            if (!outDir.mkdir()) {
+                Toast.makeText(this, "Could not create destination folder!",
+                        Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+        val db = getDatabasePath(dbName).absoluteFile
+        val dbShm = File(db.path + "-shm")
+        val dbWal = File(db.path + "-wal")
+        for (inFile in arrayOf(db, dbShm, dbWal)) {
+            val outFile = File(outDir.path + File.separator + inFile.name)
+            inFile.copyTo(outFile, overwrite = true)
+        }
+        val outDirZip = File("${outDir.path}.zip")
+        ZipUtil.pack(outDir, outDirZip)
+        if (outDirZip.exists()) {
             Toast.makeText(this, "Database exported successfully",
                     Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Failed to export database",
                     Toast.LENGTH_SHORT).show()
         }
+        outDir.deleteRecursively()
     }
 
     private fun broadcastNewPicture(file: File) {
