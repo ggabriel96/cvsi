@@ -26,6 +26,9 @@ import io.github.ggabriel96.cvsi.observer.RotationObserver
 import io.github.ggabriel96.cvsi.room.MetadataViewModel
 import io.github.ggabriel96.cvsi.room.fromPictureMetadata
 import kotlinx.android.synthetic.main.activity_camera.*
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
+import org.jetbrains.anko.toast
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 import java.text.SimpleDateFormat
@@ -107,7 +110,16 @@ class Camera : AppCompatActivity() {
         }
 
         settingsButton.setOnClickListener {
-            this.exportMetadataDatabase()
+            toast("Sharing database...")
+            launch(UI) {
+                val dbZip = this@Camera.exportMetadataZip()
+                if (dbZip != null && dbZip.exists()) {
+                    this@Camera.shareZip(Uri.fromFile(dbZip))
+                } else {
+                    Toast.makeText(this@Camera, "Failed to export database",
+                            Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -155,9 +167,9 @@ class Camera : AppCompatActivity() {
     }
 
     /**
-     * @TODO convert Toasts to something reportable
+     * @TODO use exceptions?
      */
-    private fun exportMetadataDatabase() {
+    private fun exportMetadataZip(): File? {
         val dbName = resources.getString(R.string.db_name)
         val downloadsDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS)
@@ -167,12 +179,8 @@ class Camera : AppCompatActivity() {
                         + resources.getString(R.string.app_name)
                         + "_" + dbName.replace('.', '_')
         )
-        if (!outDir.exists()) {
-            if (!outDir.mkdir()) {
-                Toast.makeText(this, "Could not create destination folder!",
-                        Toast.LENGTH_SHORT).show()
-                return
-            }
+        if (!outDir.exists() && !outDir.mkdir()) {
+            return null
         }
         val db = getDatabasePath(dbName).absoluteFile
         val dbShm = File(db.path + "-shm")
@@ -181,22 +189,19 @@ class Camera : AppCompatActivity() {
             val outFile = File(outDir.path + File.separator + inFile.name)
             inFile.copyTo(outFile, overwrite = true)
         }
-        val outDirZip = File("${outDir.path}.zip")
-        ZipUtil.pack(outDir, outDirZip)
-        if (outDirZip.exists()) {
-            Toast.makeText(this, "Database exported successfully",
-                    Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Failed to export database",
-                    Toast.LENGTH_SHORT).show()
-        }
+        val outZip = File("${outDir.path}.zip")
+        ZipUtil.pack(outDir, outZip)
         outDir.deleteRecursively()
+        return outZip
+    }
+
+    private fun shareZip(uri: Uri) {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_STREAM, Uri.fromFile(outDirZip))
+            putExtra(Intent.EXTRA_STREAM, uri)
             type = "application/zip"
         }
-        startActivity(Intent.createChooser(sendIntent, "Choose"))
+        startActivity(Intent.createChooser(sendIntent, "Share"))
     }
 
     private fun broadcastNewPicture(file: File) {
