@@ -106,7 +106,7 @@ class Camera : AppCompatActivity() {
             pendingSave?.whenAvailable { this.broadcastNewPicture(photoFile) }
             this.saveMetadata(photoFile.name)
             val l = this.metadataViewModel.list()
-            Log.d(tag, l.joinToString("\n"))
+//            Log.d(tag, l.joinToString("\n"))
         }
 
         settingsButton.setOnClickListener {
