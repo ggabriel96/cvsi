@@ -191,6 +191,12 @@ class Camera : AppCompatActivity() {
                     Toast.LENGTH_SHORT).show()
         }
         outDir.deleteRecursively()
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM, Uri.fromFile(outDirZip))
+            type = "application/zip"
+        }
+        startActivity(Intent.createChooser(sendIntent, "Choose"))
     }
 
     private fun broadcastNewPicture(file: File) {
