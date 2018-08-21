@@ -28,9 +28,13 @@ import io.github.ggabriel96.cvsi.room.fromPictureMetadata
 import kotlinx.android.synthetic.main.activity_camera.*
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
+import org.jetbrains.anko.alert
+import org.jetbrains.anko.okButton
 import org.jetbrains.anko.toast
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -109,15 +113,20 @@ class Camera : AppCompatActivity() {
 //            Log.d(tag, l.joinToString("\n"))
         }
 
-        settingsButton.setOnClickListener {
+        /**
+         * @TODO save and report exception information
+         */
+        settingsButton.setOnClickListener { btn ->
             toast("Sharing database...")
             launch(UI) {
-                val dbZip = this@Camera.exportMetadataZip()
-                if (dbZip != null && dbZip.exists()) {
+                try {
+                    val dbZip = this@Camera.exportMetadataZip()
                     this@Camera.shareZip(Uri.fromFile(dbZip))
-                } else {
-                    Toast.makeText(this@Camera, "Failed to export database",
-                            Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    val message = if (e.message != null) e.message!! else e.toString()
+                    alert(message) {
+                        okButton {}
+                    }.show()
                 }
             }
         }
@@ -169,7 +178,7 @@ class Camera : AppCompatActivity() {
     /**
      * @TODO use exceptions?
      */
-    private fun exportMetadataZip(): File? {
+    private fun exportMetadataZip(): File {
         val dbName = resources.getString(R.string.db_name)
         val downloadsDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS)
@@ -179,10 +188,11 @@ class Camera : AppCompatActivity() {
                         + resources.getString(R.string.app_name)
                         + "_" + dbName.replace('.', '_')
         )
-        if (!outDir.exists() && !outDir.mkdir()) {
-            return null
-        }
+        if (!outDir.exists() && !outDir.mkdir())
+            throw IOException("An unexpected error occurred")
         val db = getDatabasePath(dbName).absoluteFile
+        if (!db.exists())
+            throw FileNotFoundException("Database was not created yet")
         val dbShm = File(db.path + "-shm")
         val dbWal = File(db.path + "-wal")
         for (inFile in arrayOf(db, dbShm, dbWal)) {
