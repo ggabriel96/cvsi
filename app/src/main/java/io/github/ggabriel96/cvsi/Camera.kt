@@ -104,6 +104,10 @@ class Camera : AppCompatActivity() {
 
         // named lambda parameter to avoid shadowing with inner-lambda
         shootButton.setOnClickListener { btn ->
+            val cameraView = this.cameraView
+            cameraView.alpha = 0f
+            cameraView.animate().alpha(1f).setDuration(250).setListener(null)
+
             val photoResult = this.fotoapparat?.takePicture()
             val photoFile = this.getPhotoFile()
             val pendingSave = photoResult?.saveToFile(photoFile)
