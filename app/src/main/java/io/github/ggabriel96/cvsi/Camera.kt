@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
@@ -110,10 +111,10 @@ class Camera : AppCompatActivity() {
 
             val photoResult = this.fotoapparat?.takePicture()
             val photoFile = this.getPhotoFile()
+            this.saveMetadata(photoFile.name)
             val pendingSave = photoResult?.saveToFile(photoFile)
             pendingSave?.whenAvailable { this.broadcastNewPicture(photoFile) }
-            this.saveMetadata(photoFile.name)
-            val l = this.metadataViewModel.list()
+//            val l = this.metadataViewModel.list()
 //            Log.d(tag, l.joinToString("\n"))
         }
 
@@ -125,10 +126,14 @@ class Camera : AppCompatActivity() {
             launch(UI) {
                 try {
                     val dbZip = this@Camera.exportMetadataZip()
-                    this@Camera.shareZip(Uri.fromFile(dbZip))
+                    val dbUri = FileProvider.getUriForFile(
+                            this@Camera,
+                            this@Camera.applicationContext.packageName + ".provider",
+                            dbZip)
+                    this@Camera.shareZip(dbUri)
                 } catch (e: Exception) {
-                    val message = if (e.message != null) e.message!! else e.toString()
-                    alert(message) {
+                    e.printStackTrace()
+                    alert(e.toString()) {
                         okButton {}
                     }.show()
                 }
@@ -171,35 +176,38 @@ class Camera : AppCompatActivity() {
     }
 
     private fun saveMetadata(filename: String) {
-        val azimuth = this.rotationObserver.angles?.get(0)
-        val pitch = this.rotationObserver.angles?.get(0)
-        val roll = this.rotationObserver.angles?.get(0)
+        val anglesAcc = this.rotationObserver.accuracy
+        val angles = this.rotationObserver.angles
+        val azimuth = angles?.get(0)
+        val pitch = angles?.get(1)
+        val roll = angles?.get(2)
         this.metadataViewModel.insert(fromPictureMetadata(
                 filename, this.locationListener.lastLocation,
-                azimuth, pitch, roll, this.rotationObserver.accuracy))
+                azimuth, pitch, roll, anglesAcc))
     }
 
-    /**
-     * @TODO use exceptions?
-     */
     private fun exportMetadataZip(): File {
         val dbName = resources.getString(R.string.db_name)
-        val downloadsDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS)
+        val extDir = Environment.getExternalStorageDirectory()
         val outDir = File(
-                downloadsDir.path
+                extDir.path
                         + File.separator
                         + resources.getString(R.string.app_name)
-                        + "_" + dbName.replace('.', '_')
+                        + File.separator
+                        + dbName.replace('.', '_')
         )
-        if (!outDir.exists() && !outDir.mkdir())
-            throw IOException("An unexpected error occurred")
+        if (!outDir.exists() && !outDir.mkdirs())
+            throw IOException("An unexpected error occurred." +
+                    " Please check storage permission and CVSI folder on your external storage")
         val db = getDatabasePath(dbName).absoluteFile
         if (!db.exists())
             throw FileNotFoundException("Database was not created yet")
         val dbShm = File(db.path + "-shm")
         val dbWal = File(db.path + "-wal")
-        for (inFile in arrayOf(db, dbShm, dbWal)) {
+        val filesToCopy = arrayListOf(db)
+        if (dbShm.exists()) filesToCopy.add(dbShm)
+        if (dbWal.exists()) filesToCopy.add(dbWal)
+        for (inFile in filesToCopy) {
             val outFile = File(outDir.path + File.separator + inFile.name)
             inFile.copyTo(outFile, overwrite = true)
         }
@@ -215,6 +223,7 @@ class Camera : AppCompatActivity() {
             putExtra(Intent.EXTRA_STREAM, uri)
             type = "application/zip"
         }
+        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         startActivity(Intent.createChooser(sendIntent, "Share"))
     }
 

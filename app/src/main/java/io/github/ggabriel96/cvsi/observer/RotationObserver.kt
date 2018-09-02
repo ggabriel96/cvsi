@@ -9,6 +9,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
+import android.widget.Toast
 
 class RotationObserver(context: Context) : LifecycleObserver, SensorEventListener {
 
@@ -30,6 +31,14 @@ class RotationObserver(context: Context) : LifecycleObserver, SensorEventListene
                 return orientationAngles
             }
         }
+
+    init {
+        if (this.sensor == null) {
+            val msg = "Rotation Vector sensor not available!"
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            Log.e(tag, msg)
+        }
+    }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun onResume() {
