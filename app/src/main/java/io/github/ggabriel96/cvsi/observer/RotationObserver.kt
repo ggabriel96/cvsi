@@ -34,8 +34,9 @@ class RotationObserver(context: Context) : LifecycleObserver, SensorEventListene
 
     init {
         if (this.sensor == null) {
-            val msg = "Rotation Vector sensor not available!"
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            val msg = "Cannot determine smartphone orientation because the rotation" +
+                    " vector sensor is not available!"
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
             Log.e(tag, msg)
         }
     }
